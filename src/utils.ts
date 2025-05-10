@@ -1,6 +1,8 @@
-import { decAnyMetadata } from "@polkadot-api/substrate-bindings";
+import { V14, V15, decAnyMetadata } from "@polkadot-api/substrate-bindings";
 
-export function getTypedMetadata(metadata: Uint8Array) {
+import blake2b from "blake2b";
+
+export function getTypedMetadata(metadata: Uint8Array): V14 | V15 {
   try {
     const tmpMeta = decAnyMetadata(metadata);
 
@@ -12,3 +14,6 @@ export function getTypedMetadata(metadata: Uint8Array) {
     throw new Error("Unsupported metadata version");
   }
 }
+
+export const blake2b256 = (data: Uint8Array) =>
+  blake2b(32).update(data).digest();

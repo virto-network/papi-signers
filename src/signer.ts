@@ -1,12 +1,11 @@
 import { Bytes, Option, Struct, u64, u8 } from "scale-ts";
+import { blake2b256, getTypedMetadata } from "./utils.ts";
 
 import type { Authenticator } from "./authenticator.ts";
 import { PolkadotSigner } from "polkadot-api/signer";
-import blake2b from "blake2b";
-import { getTypedMetadata } from "./utils.ts";
 import { mergeUint8 } from "@polkadot-api/utils";
 
-const UncheckedExtrinsic = Struct({
+export const UncheckedExtrinsic = Struct({
   version: u8,
   prelude: Struct({
     extensionVersion: u8,
@@ -15,25 +14,23 @@ const UncheckedExtrinsic = Struct({
   call: Bytes(),
 });
 
-const PassAuthenticate = Option(
+export const PassAuthenticate = Option(
   Struct({
     deviceId: Bytes(),
     credentials: Bytes(),
   })
 );
 
-const EXTRINSIC_V5 = 0b0000_0101;
-const EXTRINSIC_FORMAT_GENERAL = 0b0100_0000;
+export const EXTRINSIC_V5 = 0b0000_0101;
+export const EXTRINSIC_FORMAT_GENERAL = 0b0100_0000;
 
 export class PassSigner implements PolkadotSigner {
   publicKey: Uint8Array<ArrayBufferLike>;
 
   constructor(private authenticator: Authenticator) {
-    this.publicKey = blake2b(32)
-      .update(
-        mergeUint8(authenticator.hashedUserId, authenticator.hashedUserId)
-      )
-      .digest();
+    this.publicKey = blake2b256(
+      mergeUint8(authenticator.hashedUserId, authenticator.hashedUserId)
+    );
   }
 
   async signTx(
@@ -44,13 +41,10 @@ export class PassSigner implements PolkadotSigner {
     >,
     encodedMetadata: Uint8Array,
     atBlockNumber: number,
-    hasher?: (data: Uint8Array) => Uint8Array
+    hasher: (data: Uint8Array) => Uint8Array = blake2b256
   ): Promise<Uint8Array> {
     const metadata = getTypedMetadata(encodedMetadata);
     const context = u64.enc(BigInt(atBlockNumber));
-
-    const hasherFn =
-      hasher ?? ((data: Uint8Array) => blake2b(32).update(data).digest());
 
     const extensions: Uint8Array[] = await Promise.all(
       metadata.extrinsic.signedExtensions.map(async ({ identifier }) => {
@@ -62,9 +56,7 @@ export class PassSigner implements PolkadotSigner {
         if (identifier === "PassAuthenticate") {
           signedExtensions[identifier].value = PassAuthenticate.enc({
             deviceId: this.authenticator.deviceId,
-            credentials: await this.authenticator.credentials(
-              hasherFn(context)
-            ),
+            credentials: await this.authenticator.credentials(hasher(context)),
           });
         }
 
