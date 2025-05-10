@@ -1,56 +1,29 @@
-# Virto Signer
+# Polkadot-API Signers and Authenticators
 
-An implementation of [Polkadot API](https://github.com/polkadot-api/polkadot-api)'s `PolkadotSigner`, that constructs a signed extrinsic which
-uses an implementation of `Authenticator` to retrieve the required `deviceId` and `credentials`.
+This repository contains the `virto-signer` library which implements the `PolkadotSigner` type, as well
+as some authenticators that are implemented in Kreivo.
 
-## Usage
+## Directory Structure
 
-```ts
-import blake2b from "blake2b";
-import { Authenticator } from '@virtonetwork/signer';
+This repository contains two directories: The first one (`virto-signer`) is a package that exports the `PassSigner`,
+a `PAPI`-based signer that completes the extension information for `pallet-pass`.
 
-class DummyAuthenticator implements Authenticator {
-  readonly deviceId: Uint8Array;
-  readonly hashedUserId: Uint8Array;
+The second directory (`authenticators`) contains several implementations of the `Authenticator` type coming from
+`virto-signer`. Among them, there's authenticators for WebAuthn and JWT.
 
-  constructor(deviceId: Uint8Array, hashedUserId: Uint8Array) {
-    this.deviceId = deviceId;
-    this.hashedUserId = deviceId;
-  }
-  
-  async credentials(challenge: Uint8Array): Promise<Uint8Array> {
-    return mergeUint8(
-      this.address,
-      this.deviceId,
-      // Dummy signature is blake2b_256(address ++ deviceId ++ challenge)
-      blake2b(32).update(
-        mergeUint8(this.address, this.deviceId, challenge)
-      ).digest(),
-    );
-  }
-}
-
-// Then, signing a transaction
-import { Binary, createClient } from "polkadot-api";
-import { kreivo } from "@polkadot-api/descriptors";
-import { getWsProvider } from "polkadot-api/ws-provider/web";
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
-
-import { VirtoSigner } from '@virtonetwork/signer';
-
-const client = createClient(
-  withPolkadotSdkCompat(getWsProvider("wss://kreivo.io"))
-);
-const api = client.getTypedApi(kreivo);
-
-const authenticator = new DummyAuthenticator(
-  new Uint8Array(32).fill(0), // Device 0
-  new Uint8Array(32).fill(0), // User 0
-);
-
-const tx = kreivoApi.tx.System.remark({
-  remark: Binary.fromText("Hello, world!"),
-});
-
-await tx.signAndSubmit(new VirtoSigner(authenticator));
+```
+papi-signers/
+├─ signers/
+│  ├─ webauthn/
+│  ├─ jwt/
+│  ├─ test/
+│  ├─ README.json
+├─ virto-signer/
+│  ├─ src/
+│  ├─ test/
+│  ├─ package.json
+│  ├─ README.json
+├─ .gitignore
+├─ package.json
+├─ README.md
 ```
