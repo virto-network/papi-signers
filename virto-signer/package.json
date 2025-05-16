@@ -20,6 +20,7 @@
   "browser": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "scripts": {
+    "test": "node --loader ts-node/esm test/index.ts",
     "prepack": "tsc && tsc -p tsconfig.cjs.json"
   },
   "author": "Virto Network <contact@virto.networks>",
@@ -33,8 +34,7 @@
     "polkadot"
   ],
   "dependencies": {
-    "blake2b": "^2.1.4",
-    "polkadot-api": "^1.10.2",
+    "polkadot-api": "^1.11.0",
     "scale-ts": "^1.6.1",
     "typescript": "^5.8.3"
   },

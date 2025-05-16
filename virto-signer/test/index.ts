@@ -1,31 +1,35 @@
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
+  KREIVO_EXTENSION_VERSION,
   PassAuthenticate,
   UncheckedExtrinsic,
 } from "../src/signer.ts";
 import { describe, it } from "node:test";
 import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 
+import { Blake2256 } from "@polkadot-api/substrate-bindings";
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
+import { KreivoBlockChallenger } from "../src/challenger.ts";
 import assert from "node:assert";
-import { blake2b256 } from "../src/utils.ts";
 import esmock from "esmock";
-import { u64 } from "scale-ts";
+import { u128 } from "scale-ts";
 
-describe("PassSigner", async () => {
-  const { PassSigner } = await esmock<typeof import("../src/signer")>(
+describe("KreivoPassSigner", async () => {
+  const getBlockHash = async (n: bigint) => Blake2256(u128.enc(n));
+
+  const { KreivoPassSigner } = await esmock<typeof import("../src/signer")>(
     "../src/signer.js",
     {
-      "../src/utils.js": {
-        getTypedMetadata() {
+      "@polkadot-api/substrate-bindings": {
+        decAnyMetadata() {
           return {
             extrinsic: {
               signedExtensions: [{ identifier: "PassAuthenticate" }],
+              signedExtensionsByVersion: 0,
             },
           };
         },
-        blake2b256,
       },
     }
   );
@@ -33,13 +37,14 @@ describe("PassSigner", async () => {
   it("returning the public key works", () => {
     const authenticator = new DummyAuthenticator(
       new Uint8Array(32),
-      new Uint8Array(32)
+      new Uint8Array(32).fill(1)
     );
-    const signer = new PassSigner(authenticator);
+    const signer = new KreivoPassSigner(authenticator, getBlockHash);
+
     assert.equal(
       toHex(signer.publicKey),
       toHex(
-        blake2b256(
+        Blake2256(
           mergeUint8(authenticator.hashedUserId, authenticator.hashedUserId)
         )
       )
@@ -49,45 +54,45 @@ describe("PassSigner", async () => {
   it("constructing the extrinsic works", async () => {
     const authenticator = new DummyAuthenticator(
       new Uint8Array(32),
-      new Uint8Array(32)
+      new Uint8Array(32).fill(1)
     );
-    const signer = new PassSigner(authenticator);
+    const signer = new KreivoPassSigner(authenticator, getBlockHash);
 
     const blockNumber = 0;
     const call = fromHex("0x0123456789ab");
 
-    assert.equal(
-      toHex(
-        await signer.signTx(
-          call,
-          {
-            PassAuthenticate: {
-              identifier: "PassAuthenticate",
-              value: fromHex("0x00"),
-              additionalSigned: fromHex("0x"),
-            },
-          },
-          fromHex("0x00"), // We're still mocking the metadata,
-          blockNumber
-        )
-      ),
-      toHex(
-        UncheckedExtrinsic.enc({
-          version: EXTRINSIC_FORMAT_GENERAL | EXTRINSIC_V5,
-          prelude: {
-            extensionVersion: 0,
-            extensions: mergeUint8(
-              PassAuthenticate.enc({
-                deviceId: authenticator.deviceId,
-                credentials: await authenticator.credentials(
-                  blake2b256(u64.enc(BigInt(blockNumber)))
-                ),
-              })
-            ),
-          },
-          call,
-        })
-      )
+    const challenge = new KreivoBlockChallenger().generate(
+      await getBlockHash(BigInt(blockNumber)),
+      Blake2256(mergeUint8(KREIVO_EXTENSION_VERSION, call))
     );
+
+    const signedTransaction = await signer.signTx(
+      call,
+      {
+        PassAuthenticate: {
+          identifier: "PassAuthenticate",
+          value: Uint8Array.from([0]),
+          additionalSigned: Uint8Array.from([]),
+        },
+      },
+      fromHex("0x00"), // We're still mocking the metadata,
+      blockNumber
+    );
+
+    const craftedSignedTransaction = UncheckedExtrinsic.enc({
+      version: EXTRINSIC_FORMAT_GENERAL | EXTRINSIC_V5,
+      prelude: {
+        extensionVersion: 0,
+        extensions: mergeUint8(
+          PassAuthenticate.enc({
+            deviceId: authenticator.deviceId,
+            credentials: await authenticator.credentials(challenge),
+          })
+        ),
+      },
+      call,
+    });
+
+    assert.equal(toHex(signedTransaction), toHex(craftedSignedTransaction));
   });
 });

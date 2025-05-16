@@ -4,5 +4,9 @@
   "workspaces": [
     "virto-signer",
     "authenticators"
-  ]
+  ],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "publish": "npm publish --workspaces --if-present"
+  }
 }
