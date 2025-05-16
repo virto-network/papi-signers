@@ -18,7 +18,7 @@ import { u128 } from "scale-ts";
 describe("KreivoPassSigner", async () => {
   const getBlockHash = async (n: bigint) => Blake2256(u128.enc(n));
 
-  const { KreivoPassSigner } = await esmock<typeof import("../src/signer")>(
+  const { KreivoPassSigner } = await esmock<typeof import("../src/signer.ts")>(
     "../src/signer.js",
     {
       "@polkadot-api/substrate-bindings": {

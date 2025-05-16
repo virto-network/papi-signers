@@ -2,8 +2,8 @@
   "name": "virto-papi-signers",
   "private": "true",
   "workspaces": [
-    "virto-signer",
-    "authenticators"
+    "signer",
+    "authenticators/*"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",

@@ -2,7 +2,7 @@ import {
   Authenticator,
   HashedUserId,
   TPassAuthenticate,
-} from "@virtonetwork/signer";
+} from "../src/index.ts";
 import {
   Bin,
   Binary,
