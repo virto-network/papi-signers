@@ -13,12 +13,18 @@ The second directory (`authenticators`) contains several implementations of the 
 
 ```
 papi-signers/
-├─ signers/
+├─ authenticators/
 │  ├─ webauthn/
+│  │  ├─ src/
+│  │  ├─ test/
+│  │  ├─ package.json
+│  │  ├─ README.json
 │  ├─ jwt/
-│  ├─ test/
-│  ├─ README.json
-├─ virto-signer/
+│  │  ├─ src/
+│  │  ├─ test/
+│  │  ├─ package.json
+│  │  ├─ README.json
+├─ signer/
 │  ├─ src/
 │  ├─ test/
 │  ├─ package.json
