@@ -1,7 +1,7 @@
 {
   "name": "@virtonetwork/signer",
   "description": "A signer for constructing a signed extrinsic using Pass-provided authenticators",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "files": [
     "dist"

@@ -23,10 +23,9 @@ export const dummyCodec: Codec<Dummy> = Struct({
 });
 
 export class DummyAuthenticator implements Authenticator {
-  readonly deviceId: Uint8Array;
   readonly hashedUserId: Uint8Array;
 
-  constructor(deviceId: Uint8Array, hashedUserId: Uint8Array) {
+  constructor(hashedUserId: Uint8Array, private deviceId: Uint8Array) {
     this.deviceId = deviceId;
     this.hashedUserId = hashedUserId;
   }

@@ -36,8 +36,8 @@ describe("KreivoPassSigner", async () => {
 
   it("returning the public key works", () => {
     const authenticator = new DummyAuthenticator(
-      new Uint8Array(32),
-      new Uint8Array(32).fill(1)
+      new Uint8Array(32).fill(1),
+      new Uint8Array(32)
     );
     const signer = new KreivoPassSigner(authenticator, getBlockHash);
 
@@ -53,8 +53,8 @@ describe("KreivoPassSigner", async () => {
 
   it("constructing the extrinsic works", async () => {
     const authenticator = new DummyAuthenticator(
-      new Uint8Array(32),
-      new Uint8Array(32).fill(1)
+      new Uint8Array(32).fill(1),
+      new Uint8Array(32)
     );
     const signer = new KreivoPassSigner(authenticator, getBlockHash);
 
