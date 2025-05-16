@@ -2,7 +2,6 @@ import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
   KREIVO_EXTENSION_VERSION,
-  PassAuthenticate,
   UncheckedExtrinsic,
 } from "../src/signer.ts";
 import { describe, it } from "node:test";
@@ -11,6 +10,7 @@ import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 import { Blake2256 } from "@polkadot-api/substrate-bindings";
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
 import { KreivoBlockChallenger } from "../src/challenger.ts";
+import { PassAuthenticate } from "../src/types.ts";
 import assert from "node:assert";
 import esmock from "esmock";
 import { u128 } from "scale-ts";
@@ -83,11 +83,8 @@ describe("KreivoPassSigner", async () => {
       version: EXTRINSIC_FORMAT_GENERAL | EXTRINSIC_V5,
       prelude: {
         extensionVersion: 0,
-        extensions: mergeUint8(
-          PassAuthenticate.enc({
-            deviceId: authenticator.deviceId,
-            credentials: await authenticator.credentials(challenge),
-          })
+        extensions: PassAuthenticate.enc(
+          await authenticator.authenticate(challenge)
         ),
       },
       call,

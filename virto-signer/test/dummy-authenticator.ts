@@ -1,6 +1,26 @@
-import { Authenticator } from "@virtonetwork/signer";
-import { Blake2256 } from "@polkadot-api/substrate-bindings";
+import {
+  Authenticator,
+  HashedUserId,
+  TPassAuthenticate,
+} from "@virtonetwork/signer";
+import {
+  Bin,
+  Binary,
+  Blake2256,
+  FixedSizeBinary,
+} from "@polkadot-api/substrate-bindings";
+import { Codec, Struct } from "scale-ts";
+
 import { mergeUint8 } from "polkadot-api/utils";
+
+export type Dummy = {
+  hashedUserId: HashedUserId;
+  signature: FixedSizeBinary<32>;
+};
+export const dummyCodec: Codec<Dummy> = Struct({
+  hashedUserId: Bin(32),
+  signature: Bin(32),
+});
 
 export class DummyAuthenticator implements Authenticator {
   readonly deviceId: Uint8Array;
@@ -11,12 +31,18 @@ export class DummyAuthenticator implements Authenticator {
     this.hashedUserId = hashedUserId;
   }
 
-  async credentials(challenge: Uint8Array): Promise<Uint8Array> {
-    return mergeUint8(
-      this.hashedUserId,
-      this.deviceId,
-      // Dummy signature is blake2b_256(hashed_user_id ++ device_id ++ challenge)
-      Blake2256(mergeUint8(this.hashedUserId, this.deviceId, challenge))
-    );
+  async authenticate(challenge: Uint8Array): Promise<TPassAuthenticate> {
+    return {
+      deviceId: Binary.fromBytes(this.deviceId),
+      credentials: {
+        tag: "WebAuthn",
+        value: dummyCodec.enc({
+          hashedUserId: Binary.fromBytes(this.hashedUserId),
+          signature: Binary.fromBytes(
+            Blake2256(mergeUint8(this.hashedUserId, this.deviceId, challenge))
+          ),
+        }),
+      },
+    };
   }
 }

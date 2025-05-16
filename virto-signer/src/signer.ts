@@ -3,10 +3,11 @@ import {
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
-import { Bytes, Option, Struct, u128, u8 } from "scale-ts";
+import { Bytes, Struct, u8 } from "scale-ts";
 import { Challenger, KreivoBlockChallenger } from "./challenger.ts";
 
 import type { Authenticator } from "./authenticator.ts";
+import { PassAuthenticate } from "./types.ts";
 import { PolkadotSigner } from "polkadot-api/signer";
 import { mergeUint8 } from "@polkadot-api/utils";
 
@@ -18,13 +19,6 @@ export const UncheckedExtrinsic = Struct({
   }),
   call: Bytes(),
 });
-
-export const PassAuthenticate = Option(
-  Struct({
-    deviceId: Bytes(),
-    credentials: Bytes(),
-  })
-);
 
 type TransactionExtensionMetadata = {
   identifier: string;
@@ -116,10 +110,10 @@ export class KreivoPassSigner implements PolkadotSigner {
     );
 
     const challenge = this.challenger.generate(blockHash, extrinsicContext);
-    txExtensions[ix].value = PassAuthenticate.enc({
-      deviceId: this.authenticator.deviceId,
-      credentials: await this.authenticator.assertion(challenge),
-    });
+
+    txExtensions[ix].value = PassAuthenticate.enc(
+      await this.authenticator.authenticate(challenge)
+    );
 
     return txExtensions;
   }
