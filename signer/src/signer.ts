@@ -21,8 +21,8 @@ export class KreivoPassSigner implements PolkadotSigner {
   publicKey: Uint8Array<ArrayBufferLike>;
 
   constructor(
-    private authenticator: Authenticator,
-    private getBlockHash: (n: bigint) => Promise<Uint8Array>,
+    private authenticator: Authenticator<number>,
+    private getBlockHash: (n: number) => Promise<Uint8Array>,
     private challenger: Challenger = new KreivoBlockChallenger()
   ) {
     // Calcualte the pass account's "public key" (map to address is 1:1, so it's safe
@@ -52,10 +52,11 @@ export class KreivoPassSigner implements PolkadotSigner {
       }
     );
 
-    const blockHash = await this.getBlockHash(BigInt(atBlockNumber));
+    const blockHash = await this.getBlockHash(atBlockNumber);
     const extensions = await this.extensionsWithAuthentication(
       call,
       txExtensions,
+      atBlockNumber,
       blockHash,
       hasher
     ).then((xts) => xts.map((x) => x.value));
@@ -73,6 +74,7 @@ export class KreivoPassSigner implements PolkadotSigner {
   private async extensionsWithAuthentication(
     call: Uint8Array,
     txExtensions: TransactionExtensionMetadata[],
+    blockNumber: number,
     blockHash: Uint8Array,
     hasher = Blake2256
   ): Promise<TransactionExtensionMetadata[]> {
@@ -99,7 +101,7 @@ export class KreivoPassSigner implements PolkadotSigner {
     const challenge = this.challenger.generate(blockHash, extrinsicContext);
 
     txExtensions[ix].value = PassAuthenticate.enc(
-      await this.authenticator.authenticate(challenge)
+      await this.authenticator.authenticate(challenge, blockNumber)
     );
 
     return txExtensions;
