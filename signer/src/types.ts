@@ -1,5 +1,5 @@
 import { Bin, Bytes } from "@polkadot-api/substrate-bindings";
-import { Codec, Enum, Option, Struct, createCodec } from "scale-ts";
+import { Codec, Enum, Option, Struct, createCodec, u8 } from "scale-ts";
 
 import { FixedSizeBinary } from "polkadot-api";
 
@@ -32,3 +32,19 @@ export const PassAuthenticate: Codec<TPassAuthenticate> = Option(
     }),
   })
 );
+export const UncheckedExtrinsic = Struct({
+  version: u8,
+  prelude: Struct({
+    extensionVersion: u8,
+    extensions: Bytes(),
+  }),
+  call: Bytes(),
+});
+export type TransactionExtensionMetadata = {
+  identifier: string;
+  value: Uint8Array;
+  additionalSigned: Uint8Array;
+};
+export const EXTRINSIC_V5 = 5;
+export const EXTRINSIC_FORMAT_GENERAL = 64;
+export const KREIVO_EXTENSION_VERSION = u8.enc(0);

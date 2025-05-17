@@ -3,32 +3,19 @@ import {
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
-import { Bytes, Struct, u8 } from "scale-ts";
 import { Challenger, KreivoBlockChallenger } from "./challenger.ts";
+import {
+  EXTRINSIC_FORMAT_GENERAL,
+  EXTRINSIC_V5,
+  KREIVO_EXTENSION_VERSION,
+  PassAuthenticate,
+  TransactionExtensionMetadata,
+  UncheckedExtrinsic,
+} from "./types.ts";
 
 import type { Authenticator } from "./authenticator.ts";
-import { PassAuthenticate } from "./types.ts";
 import { PolkadotSigner } from "polkadot-api/signer";
 import { mergeUint8 } from "@polkadot-api/utils";
-
-export const UncheckedExtrinsic = Struct({
-  version: u8,
-  prelude: Struct({
-    extensionVersion: u8,
-    extensions: Bytes(),
-  }),
-  call: Bytes(),
-});
-
-type TransactionExtensionMetadata = {
-  identifier: string;
-  value: Uint8Array;
-  additionalSigned: Uint8Array;
-};
-
-export const EXTRINSIC_V5 = 0b0000_0101;
-export const EXTRINSIC_FORMAT_GENERAL = 0b0100_0000;
-export const KREIVO_EXTENSION_VERSION = u8.enc(0);
 
 export class KreivoPassSigner implements PolkadotSigner {
   publicKey: Uint8Array<ArrayBufferLike>;
