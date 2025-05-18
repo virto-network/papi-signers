@@ -10,16 +10,15 @@ import {
   parseAuthenticatorData,
 } from "@simplewebauthn/server/helpers";
 import { describe, it } from "node:test";
-import { fromHex, toHex } from "@polkadot-api/utils";
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 
 import { Assertion } from "../src/types.ts";
-import { KreivoBlockChallenger } from "@virtonetwork/signer";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { mergeUint8 } from "@polkadot-api/utils";
 
 // Origin that will be attached to the emulator (only affects RP id handling)
 const ORIGIN = "https://example.com";
@@ -40,16 +39,19 @@ Object.defineProperty((globalThis as any).navigator, "credentials", {
 
 describe("WebAuthn", async () => {
   const BLOCK_NO = 777;
-  const BLOCK_HASH = toHex(Blake2256(u32.enc(BLOCK_NO)));
+
+  async function getChallenge(ctx: number, xtc: Uint8Array) {
+    return Blake2256(mergeUint8(Blake2256(u32.enc(ctx)), xtc));
+  }
 
   it("setup() hashes userId", async () => {
-    const wa = await new WebAuthn("alice@example.com").setup();
+    const wa = await new WebAuthn("alice@example.com", getChallenge).setup();
     assert.equal(wa.hashedUserId.length, 32);
   });
 
   it.skip("register() flows through emulator and returns TAttestation", async () => {
-    const wa = await new WebAuthn("bob@example.com").setup();
-    const attestation = await wa.register(BLOCK_NO, BLOCK_HASH);
+    const wa = await new WebAuthn("bob@example.com", getChallenge).setup();
+    const attestation = await wa.register(BLOCK_NO);
 
     // Ensure meta
     assert.deepEqual(
@@ -78,10 +80,7 @@ describe("WebAuthn", async () => {
 
     // Ensure clientData
     const challenge = encodeBase64Url(
-      new KreivoBlockChallenger().generate(
-        fromHex(BLOCK_HASH),
-        new Uint8Array([])
-      )
+      await getChallenge(BLOCK_NO, new Uint8Array([]))
     );
     assert.deepEqual(JSON.parse(attestation.client_data.asText()), {
       type: "webauthn.create",
@@ -115,8 +114,8 @@ describe("WebAuthn", async () => {
 
   it("authenticate() produces a coherent TPassAuthenticate", async () => {
     // First register to get a credential id
-    const wa = await new WebAuthn("carol@example.com").setup();
-    const att = await wa.register(BLOCK_NO, BLOCK_HASH);
+    const wa = await new WebAuthn("carol@example.com", getChallenge).setup();
+    const att = await wa.register(BLOCK_NO);
 
     const attestationObject = decodeAttestationObject(
       att.authenticator_data.asBytes()
@@ -126,11 +125,9 @@ describe("WebAuthn", async () => {
     );
 
     // Generate arbitrary challenge
-    const challenge = new KreivoBlockChallenger().generate(
-      fromHex(BLOCK_HASH),
-      new Uint8Array([1, 2, 3])
-    );
-    const passAuthenticate = await wa.authenticate(challenge, BLOCK_NO);
+    const extrinsicContext = new Uint8Array([1, 2, 3]);
+    const challenge = await getChallenge(BLOCK_NO, extrinsicContext);
+    const passAuthenticate = await wa.authenticate(BLOCK_NO, extrinsicContext);
 
     // deviceId should equal Blake2256(credentialId)
     assert.deepEqual(

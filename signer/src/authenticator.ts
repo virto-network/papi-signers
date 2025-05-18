@@ -3,5 +3,6 @@ import { TPassAuthenticate } from "./types.ts";
 export interface Authenticator<Ctx> {
   readonly hashedUserId: Uint8Array;
 
-  authenticate(challenge: Uint8Array, context: Ctx): Promise<TPassAuthenticate>;
+  getChallenge(ctx: Ctx, xtc: Uint8Array): Promise<Uint8Array>;
+  authenticate(context: Ctx, xtc: Uint8Array): Promise<TPassAuthenticate>;
 }

@@ -1,10 +1,8 @@
 import {
   Blake2256,
-  FixedSizeBinary,
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
-import { Challenger, KreivoBlockChallenger } from "./challenger.ts";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
@@ -21,11 +19,7 @@ import { mergeUint8 } from "@polkadot-api/utils";
 export class KreivoPassSigner implements PolkadotSigner {
   publicKey: Uint8Array<ArrayBufferLike>;
 
-  constructor(
-    private authenticator: Authenticator<number>,
-    private getBlockHash: (n: number) => Promise<FixedSizeBinary<32>>,
-    private challenger: Challenger = new KreivoBlockChallenger()
-  ) {
+  constructor(private authenticator: Authenticator<number>) {
     // Calcualte the pass account's "public key" (map to address is 1:1, so it's safe
     // to say this is a public key) based on
     this.publicKey = Blake2256(
@@ -53,12 +47,10 @@ export class KreivoPassSigner implements PolkadotSigner {
       }
     );
 
-    const blockHash = await this.getBlockHash(atBlockNumber);
     const extensions = await this.extensionsWithAuthentication(
       call,
       txExtensions,
       atBlockNumber,
-      blockHash.asBytes(),
       hasher
     ).then((xts) => xts.map((x) => x.value));
 
@@ -76,7 +68,6 @@ export class KreivoPassSigner implements PolkadotSigner {
     call: Uint8Array,
     txExtensions: TransactionExtensionMetadata[],
     blockNumber: number,
-    blockHash: Uint8Array,
     hasher = Blake2256
   ): Promise<TransactionExtensionMetadata[]> {
     const ix = txExtensions.findIndex(
@@ -99,10 +90,8 @@ export class KreivoPassSigner implements PolkadotSigner {
       mergeUint8(KREIVO_EXTENSION_VERSION, call, extensions, implicit)
     );
 
-    const challenge = this.challenger.generate(blockHash, extrinsicContext);
-
     txExtensions[ix].value = PassAuthenticate.enc(
-      await this.authenticator.authenticate(challenge, blockNumber)
+      await this.authenticator.authenticate(blockNumber, extrinsicContext)
     );
 
     return txExtensions;

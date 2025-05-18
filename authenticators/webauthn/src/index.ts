@@ -14,17 +14,12 @@
  *
  * @module WebAuthn
  */
-import {
-  Authenticator,
-  DeviceId,
-  KreivoBlockChallenger,
-} from "@virtonetwork/signer";
+import { Authenticator, DeviceId } from "@virtonetwork/signer";
 import { Binary, Blake2256 } from "@polkadot-api/substrate-bindings";
-import type { BlockHash, TAssertion, TAttestation } from "./types.ts";
+import type { TAssertion, TAttestation } from "./types.ts";
 
 import { Assertion } from "./types.ts";
 import type { TPassAuthenticate } from "@virtonetwork/signer";
-import { fromHex } from "polkadot-api/utils";
 
 /** Fixed authority id for Kreivo pass‑key attestors. */
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));
@@ -54,6 +49,10 @@ export class WebAuthn implements Authenticator<number> {
    */
   constructor(
     public readonly userId: string,
+    public getChallenge: (
+      context: number,
+      xtc: Uint8Array
+    ) => Promise<Uint8Array>,
     public credentialId?: Uint8Array
   ) {}
 
@@ -112,15 +111,13 @@ export class WebAuthn implements Authenticator<number> {
    */
   public async register(
     blockNumber: number,
-    blockHash: BlockHash,
     displayName: string = this.userId
   ): Promise<TAttestation<number>> {
     if (this.credentialId) {
       throw new Error("Already have a credentialId; no need to register");
     }
 
-    const challenger = new KreivoBlockChallenger();
-    const challenge = challenger.generate(fromHex(blockHash), new Uint8Array());
+    const challenge = await this.getChallenge(blockNumber, new Uint8Array([]));
 
     const credentials = (await navigator.credentials.create({
       publicKey: {
@@ -175,8 +172,8 @@ export class WebAuthn implements Authenticator<number> {
    * @throws Error If no credential id is available.
    */
   public async authenticate(
-    challenge: Uint8Array,
-    context: number
+    context: number,
+    xtc: Uint8Array
   ): Promise<TPassAuthenticate> {
     if (!this.credentialId) {
       throw new Error(
@@ -184,6 +181,7 @@ export class WebAuthn implements Authenticator<number> {
       );
     }
 
+    const challenge = await this.getChallenge(context, xtc);
     const publicKey: PublicKeyCredentialRequestOptions = {
       challenge,
       allowCredentials: [
