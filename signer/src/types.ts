@@ -36,9 +36,9 @@ export const UncheckedExtrinsic = Struct({
   version: u8,
   prelude: Struct({
     extensionVersion: u8,
-    extensions: Bytes(),
+    extensions: identityCodec,
   }),
-  call: Bytes(),
+  call: identityCodec,
 });
 export type TransactionExtensionMetadata = {
   identifier: string;

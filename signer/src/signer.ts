@@ -1,5 +1,6 @@
 import {
   Blake2256,
+  compact,
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
@@ -23,7 +24,7 @@ export class KreivoPassSigner implements PolkadotSigner {
     // Calcualte the pass account's "public key" (map to address is 1:1, so it's safe
     // to say this is a public key) based on
     this.publicKey = Blake2256(
-      mergeUint8(authenticator.hashedUserId, authenticator.hashedUserId)
+      mergeUint8(authenticator.hashedUserId, new Uint8Array(32).fill(0))
     );
   }
 
@@ -50,11 +51,11 @@ export class KreivoPassSigner implements PolkadotSigner {
     const extensions = await this.extensionsWithAuthentication(
       call,
       txExtensions,
-      atBlockNumber,
+      atBlockNumber - 1,
       hasher
     ).then((xts) => xts.map((x) => x.value));
 
-    return UncheckedExtrinsic.enc({
+    const xt = UncheckedExtrinsic.enc({
       version: EXTRINSIC_V5 | EXTRINSIC_FORMAT_GENERAL,
       prelude: {
         extensionVersion: 0,
@@ -62,6 +63,7 @@ export class KreivoPassSigner implements PolkadotSigner {
       },
       call,
     });
+    return mergeUint8(compact.enc(xt.length), xt);
   }
 
   private async extensionsWithAuthentication(
