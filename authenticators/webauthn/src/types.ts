@@ -5,53 +5,53 @@ import { Codec, Struct, u32 } from "scale-ts";
 export type BlockHash = HexString;
 
 export type TAttestationMeta<Cx> = {
-  authorityId: AuthorityId;
-  deviceId: DeviceId;
+  authority_id: AuthorityId;
+  device_id: DeviceId;
   context: Cx;
 };
 
 const AttestationMeta: Codec<TAttestationMeta<number>> = Struct({
-  authorityId: Bin(32),
-  deviceId: Bin(32),
+  authority_id: Bin(32),
+  device_id: Bin(32),
   context: u32,
 });
 
 export type TAttestation<Cx> = {
   meta: TAttestationMeta<Cx>;
-  authenticatorData: Binary;
-  clientData: Binary;
-  publicKey: Binary;
+  authenticator_data: Binary;
+  client_data: Binary;
+  public_key: Binary;
 };
 
 export const Attestation: Codec<TAttestation<number>> = Struct({
   meta: AttestationMeta,
-  authenticatorData: Bin(),
-  clientData: Bin(),
-  publicKey: Bin(),
+  authenticator_data: Bin(),
+  client_data: Bin(),
+  public_key: Bin(),
 });
 
 export type TAssertionMeta<Cx> = {
-  authorityId: AuthorityId;
-  userId: HashedUserId;
+  authority_id: AuthorityId;
+  user_id: HashedUserId;
   context: Cx;
 };
 
 const AssertionMeta: Codec<TAssertionMeta<number>> = Struct({
-  authorityId: Bin(32),
-  userId: Bin(32),
+  authority_id: Bin(32),
+  user_id: Bin(32),
   context: u32,
 });
 
 export type TAssertion<Cx> = {
   meta: TAssertionMeta<Cx>;
-  authenticatorData: Binary;
-  clientData: Binary;
+  authenticator_data: Binary;
+  client_data: Binary;
   signature: Binary;
 };
 
 export const Assertion: Codec<TAssertion<number>> = Struct({
   meta: AssertionMeta,
-  authenticatorData: Bin(),
-  clientData: Bin(),
+  authenticator_data: Bin(),
+  client_data: Bin(),
   signature: Bin(),
 });

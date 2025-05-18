@@ -154,13 +154,13 @@ export class WebAuthn implements Authenticator<number> {
 
     return {
       meta: {
-        authorityId: KREIVO_AUTHORITY_ID,
-        deviceId: await WebAuthn.getDeviceId(this),
+        authority_id: KREIVO_AUTHORITY_ID,
+        device_id: await WebAuthn.getDeviceId(this),
         context: blockNumber,
       },
-      authenticatorData: Binary.fromBytes(new Uint8Array(attestationObject)),
-      clientData: Binary.fromBytes(new Uint8Array(clientDataJSON)),
-      publicKey: Binary.fromBytes(new Uint8Array(publicKey)),
+      authenticator_data: Binary.fromBytes(new Uint8Array(attestationObject)),
+      client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
+      public_key: Binary.fromBytes(new Uint8Array(publicKey)),
     };
   }
 
@@ -206,12 +206,12 @@ export class WebAuthn implements Authenticator<number> {
 
     const assertion: TAssertion<number> = {
       meta: {
-        authorityId: KREIVO_AUTHORITY_ID,
-        userId: Binary.fromBytes(this.hashedUserId),
+        authority_id: KREIVO_AUTHORITY_ID,
+        user_id: Binary.fromBytes(this.hashedUserId),
         context,
       },
-      authenticatorData: Binary.fromBytes(new Uint8Array(authenticatorData)),
-      clientData: Binary.fromBytes(new Uint8Array(clientDataJSON)),
+      authenticator_data: Binary.fromBytes(new Uint8Array(authenticatorData)),
+      client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
       signature: Binary.fromBytes(new Uint8Array(signature)),
     };
 

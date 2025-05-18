@@ -53,18 +53,18 @@ describe("WebAuthn", async () => {
 
     // Ensure meta
     assert.deepEqual(
-      attestation.meta.authorityId.asBytes(),
+      attestation.meta.authority_id.asBytes(),
       KREIVO_AUTHORITY_ID.asBytes()
     );
     assert.deepEqual(
-      attestation.meta.deviceId.asBytes(),
+      attestation.meta.device_id.asBytes(),
       (await WebAuthn.getDeviceId(wa)).asBytes()
     );
     assert.equal(attestation.meta.context, BLOCK_NO);
 
     // Ensure authenticatorData
     const attestationObject = decodeAttestationObject(
-      attestation.authenticatorData.asBytes()
+      attestation.authenticator_data.asBytes()
     );
     const authenticatorData = parseAuthenticatorData(
       attestationObject.get("authData")
@@ -83,7 +83,7 @@ describe("WebAuthn", async () => {
         new Uint8Array([])
       )
     );
-    assert.deepEqual(JSON.parse(attestation.clientData.asText()), {
+    assert.deepEqual(JSON.parse(attestation.client_data.asText()), {
       type: "webauthn.create",
       challenge,
       origin: ORIGIN,
@@ -101,9 +101,9 @@ describe("WebAuthn", async () => {
         type: "public-key",
         response: {
           attestationObject: encodeBase64Url(
-            attestation.authenticatorData.asBytes()
+            attestation.authenticator_data.asBytes()
           ),
-          clientDataJSON: encodeBase64Url(attestation.clientData.asBytes()),
+          clientDataJSON: encodeBase64Url(attestation.client_data.asBytes()),
         },
         clientExtensionResults: {},
       },
@@ -119,7 +119,7 @@ describe("WebAuthn", async () => {
     const att = await wa.register(BLOCK_NO, BLOCK_HASH);
 
     const attestationObject = decodeAttestationObject(
-      att.authenticatorData.asBytes()
+      att.authenticator_data.asBytes()
     );
     const attAuthenticatorData = parseAuthenticatorData(
       attestationObject.get("authData")
@@ -149,14 +149,14 @@ describe("WebAuthn", async () => {
 
     // Validate metadata
     assert.deepEqual(
-      decodedAssertion.meta.authorityId.asText(),
+      decodedAssertion.meta.authority_id.asText(),
       KREIVO_AUTHORITY_ID.asText()
     );
-    assert.deepEqual(decodedAssertion.meta.userId.asBytes(), wa.hashedUserId);
+    assert.deepEqual(decodedAssertion.meta.user_id.asBytes(), wa.hashedUserId);
     assert.equal(decodedAssertion.meta.context, BLOCK_NO);
 
     // Verify authenticatorData and client-collected data
-    assert.deepEqual(JSON.parse(decodedAssertion.clientData.asText()), {
+    assert.deepEqual(JSON.parse(decodedAssertion.client_data.asText()), {
       type: "webauthn.get",
       challenge: encodeBase64Url(challenge),
       origin: ORIGIN,
@@ -170,10 +170,10 @@ describe("WebAuthn", async () => {
         rawId: encodeBase64Url(attAuthenticatorData.credentialID!),
         response: {
           authenticatorData: encodeBase64Url(
-            decodedAssertion.authenticatorData.asBytes()
+            decodedAssertion.authenticator_data.asBytes()
           ),
           clientDataJSON: encodeBase64Url(
-            decodedAssertion.clientData.asBytes()
+            decodedAssertion.client_data.asBytes()
           ),
           signature: encodeBase64Url(decodedAssertion.signature.asBytes()),
         },
