@@ -1,3 +1,4 @@
+import { Bin, Blake2256 } from "@polkadot-api/substrate-bindings";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
@@ -7,7 +8,6 @@ import {
 import { describe, it } from "node:test";
 import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 
-import { Blake2256 } from "@polkadot-api/substrate-bindings";
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
 import { KreivoBlockChallenger } from "../src/challenger.ts";
 import { PassAuthenticate } from "../src/types.ts";
@@ -16,7 +16,7 @@ import esmock from "esmock";
 import { u32 } from "scale-ts";
 
 describe("KreivoPassSigner", async () => {
-  const getBlockHash = async (n: number) => Blake2256(u32.enc(n));
+  const getBlockHash = async (n: number) => Bin(32).dec(Blake2256(u32.enc(n)));
 
   const { KreivoPassSigner } = await esmock<typeof import("../src/signer.ts")>(
     "../src/signer.js",
@@ -62,7 +62,7 @@ describe("KreivoPassSigner", async () => {
     const call = fromHex("0x0123456789ab");
 
     const challenge = new KreivoBlockChallenger().generate(
-      await getBlockHash(blockNumber),
+      (await getBlockHash(blockNumber)).asBytes(),
       Blake2256(mergeUint8(KREIVO_EXTENSION_VERSION, call))
     );
 

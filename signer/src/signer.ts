@@ -1,5 +1,6 @@
 import {
   Blake2256,
+  FixedSizeBinary,
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
@@ -22,7 +23,7 @@ export class KreivoPassSigner implements PolkadotSigner {
 
   constructor(
     private authenticator: Authenticator<number>,
-    private getBlockHash: (n: number) => Promise<Uint8Array>,
+    private getBlockHash: (n: number) => Promise<FixedSizeBinary<32>>,
     private challenger: Challenger = new KreivoBlockChallenger()
   ) {
     // Calcualte the pass account's "public key" (map to address is 1:1, so it's safe
@@ -57,7 +58,7 @@ export class KreivoPassSigner implements PolkadotSigner {
       call,
       txExtensions,
       atBlockNumber,
-      blockHash,
+      blockHash.asBytes(),
       hasher
     ).then((xts) => xts.map((x) => x.value));
 
