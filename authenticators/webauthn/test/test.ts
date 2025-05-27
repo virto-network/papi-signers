@@ -4,7 +4,11 @@ import {
   WebAuthnEmulator,
   encodeBase64Url,
 } from "nid-webauthn-emulator";
-import { KREIVO_AUTHORITY_ID, WebAuthn } from "../src/index.ts";
+import {
+  InMemoryCredentialsHandler,
+  KREIVO_AUTHORITY_ID,
+  WebAuthn,
+} from "../src/index.ts";
 import {
   decodeAttestationObject,
   parseAuthenticatorData,
@@ -44,13 +48,25 @@ describe("WebAuthn", async () => {
     return Blake2256(mergeUint8(Blake2256(u32.enc(ctx)), xtc));
   }
 
+  class TestAuthenticatiorOptions extends InMemoryCredentialsHandler {
+    static deviceId(userId: string) {
+      const id = this.credentialIds(userId).at(0);
+      return id !== undefined ? Blake2256(new Uint8Array(id)) : undefined;
+    }
+  }
+
   it("setup() hashes userId", async () => {
     const wa = await new WebAuthn("alice@example.com", getChallenge).setup();
     assert.equal(wa.hashedUserId.length, 32);
   });
 
-  it.skip("register() flows through emulator and returns TAttestation", async () => {
-    const wa = await new WebAuthn("bob@example.com", getChallenge).setup();
+  it("register() flows through emulator and returns TAttestation", async () => {
+    const userId = "bob@example.com";
+    const wa = await new WebAuthn(
+      userId,
+      getChallenge,
+      new TestAuthenticatiorOptions()
+    ).setup();
     const attestation = await wa.register(BLOCK_NO);
 
     // Ensure meta
@@ -60,7 +76,7 @@ describe("WebAuthn", async () => {
     );
     assert.deepEqual(
       attestation.meta.device_id.asBytes(),
-      (await WebAuthn.getDeviceId(wa)).asBytes()
+      TestAuthenticatiorOptions.deviceId(userId)
     );
     assert.equal(attestation.meta.context, BLOCK_NO);
 
@@ -76,7 +92,10 @@ describe("WebAuthn", async () => {
       authenticatorData.rpIdHash,
       new Uint8Array(createHash("sha256").update("example.com").digest())
     );
-    assert.deepEqual(authenticatorData.credentialID, wa.credentialId);
+    assert.deepEqual(
+      authenticatorData.credentialID,
+      TestAuthenticatiorOptions.credentialIds(userId).at(0)
+    );
 
     // Ensure clientData
     const challenge = encodeBase64Url(
@@ -114,7 +133,12 @@ describe("WebAuthn", async () => {
 
   it("authenticate() produces a coherent TPassAuthenticate", async () => {
     // First register to get a credential id
-    const wa = await new WebAuthn("carol@example.com", getChallenge).setup();
+    const userId = "carol@example.com";
+    const wa = await new WebAuthn(
+      userId,
+      getChallenge,
+      new TestAuthenticatiorOptions()
+    ).setup();
     const att = await wa.register(BLOCK_NO);
 
     const attestationObject = decodeAttestationObject(
@@ -132,17 +156,14 @@ describe("WebAuthn", async () => {
     // deviceId should equal Blake2256(credentialId)
     assert.deepEqual(
       passAuthenticate?.deviceId.asBytes(),
-      (await WebAuthn.getDeviceId(wa)).asBytes()
+      TestAuthenticatiorOptions.deviceId(userId)
     );
 
     // This authenticator resolves to PassCredentials::WebAuithn(credentials)
-    assert.equal(passAuthenticate.credentials.tag, "WebAuthn");
-
-    // Obtain assertion value:
-    const encodedAssertion = passAuthenticate.credentials.value;
+    assert.equal(passAuthenticate?.credentials.tag, "WebAuthn");
 
     // Decode and validate the assertion context
-    const decodedAssertion = Assertion.dec(encodedAssertion);
+    const decodedAssertion = Assertion.dec(passAuthenticate?.credentials.value);
 
     // Validate metadata
     assert.deepEqual(

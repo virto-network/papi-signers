@@ -4,6 +4,28 @@ import { Codec, Struct, u32 } from "scale-ts";
 
 export type BlockHash = HexString;
 
+export type GetChallenge<Cx> = (
+  ctx: Cx,
+  xtc: Uint8Array
+) => Promise<Uint8Array>;
+
+export type hashedUserId = (userId: string) => Promise<Uint8Array>;
+
+export interface CredentialsHandler {
+  publicKeyCreateOptions(
+    challenge: Uint8Array,
+    user: PublicKeyCredentialUserEntity
+  ): Promise<CredentialCreationOptions["publicKey"]>;
+  onCreatedCredentials(
+    userId: string,
+    credentials: PublicKeyCredential
+  ): Promise<void>;
+  publicKeyRequestOptions(
+    userId: string,
+    challenge: Uint8Array
+  ): Promise<CredentialRequestOptions["publicKey"]>;
+}
+
 export type TAttestationMeta<Cx> = {
   authority_id: AuthorityId;
   device_id: DeviceId;

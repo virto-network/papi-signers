@@ -16,10 +16,17 @@
  */
 import { Authenticator, DeviceId } from "@virtonetwork/signer";
 import { Binary, Blake2256 } from "@polkadot-api/substrate-bindings";
-import type { TAssertion, TAttestation } from "./types.ts";
+import type {
+  CredentialsHandler,
+  GetChallenge,
+  TAttestation,
+} from "./types.ts";
 
 import { Assertion } from "./types.ts";
+import { InMemoryCredentialsHandler } from "./in-memory-credentials-handler.ts";
 import type { TPassAuthenticate } from "@virtonetwork/signer";
+
+export { InMemoryCredentialsHandler };
 
 /** Fixed authority id for Kreivo pass‑key attestors. */
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));
@@ -39,6 +46,11 @@ export class WebAuthn implements Authenticator<number> {
    * for all WebAuthn operations.
    */
   public hashedUserId: Uint8Array = new Uint8Array(32);
+  private credentialId?: Uint8Array;
+
+  private getPublicKeyCreateOptions: CredentialsHandler["publicKeyCreateOptions"];
+  private getPublicKeyRequestOptions: CredentialsHandler["publicKeyRequestOptions"];
+  private onCreatedCredentials: CredentialsHandler["onCreatedCredentials"];
 
   /**
    * Creates a new WebAuthn helper.
@@ -49,36 +61,16 @@ export class WebAuthn implements Authenticator<number> {
    */
   constructor(
     public readonly userId: string,
-    public getChallenge: (
-      context: number,
-      xtc: Uint8Array
-    ) => Promise<Uint8Array>,
-    public credentialId?: Uint8Array
-  ) {}
-
-  /**
-   * Deterministic identifier of the hardware/software authenticator
-   * (`deviceId = Blake2‑256(credentialId)`).
-   *
-   * @returns DeviceId suitable for on‑chain storage.
-   * @throws Error If this instance does not yet know a credential id.
-   */
-  public static async getDeviceId(wa: WebAuthn): Promise<DeviceId> {
-    if (!wa.credentialId) {
-      throw new Error(
-        "credentialId unknown – call register() first or inject it via constructor/setCredentialId()"
-      );
-    }
-    return Binary.fromBytes(Blake2256(wa.credentialId));
-  }
-
-  /**
-   * Injects a credential id discovered by the caller after construction.
-   *
-   * @param id - Raw credential id obtained from storage or backend.
-   */
-  public setCredentialId(id: Uint8Array): void {
-    this.credentialId = id;
+    public getChallenge: GetChallenge<number>,
+    {
+      publicKeyCreateOptions,
+      publicKeyRequestOptions,
+      onCreatedCredentials,
+    }: CredentialsHandler = new InMemoryCredentialsHandler()
+  ) {
+    this.getPublicKeyCreateOptions = publicKeyCreateOptions;
+    this.getPublicKeyRequestOptions = publicKeyRequestOptions;
+    this.onCreatedCredentials = onCreatedCredentials;
   }
 
   /**
@@ -88,14 +80,30 @@ export class WebAuthn implements Authenticator<number> {
    * Returns `this` for fluent chaining.
    */
   public async setup(): Promise<this> {
-    this.hashedUserId = new Uint8Array(
-      await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(this.userId)
-      )
-    );
-
+    this.hashedUserId = await WebAuthn.getHashedUserId(this.userId);
     return this;
+  }
+
+  private static async getHashedUserId(userId: string) {
+    return new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId))
+    );
+  }
+
+  /**
+   * Deterministic identifier of the hardware/software authenticator
+   * (`deviceId = Blake2‑256(credentialId)`).
+   *
+   * @returns DeviceId suitable for on‑chain storage.
+   * @throws Error If this instance does not yet know a credential id.
+   */
+  private async getDeviceId(): Promise<DeviceId> {
+    if (!this.credentialId) {
+      throw new Error(
+        "credentialId unknown – call register() first or inject it via constructor/setCredentialId()"
+      );
+    }
+    return Binary.fromBytes(Blake2256(this.credentialId));
   }
 
   /**
@@ -120,19 +128,11 @@ export class WebAuthn implements Authenticator<number> {
     const challenge = await this.getChallenge(blockNumber, new Uint8Array([]));
 
     const credentials = (await navigator.credentials.create({
-      publicKey: {
-        challenge,
-        rp: { name: "Virto Passkeys" },
-        user: {
-          id: this.hashedUserId,
-          name: this.userId,
-          displayName,
-        },
-        pubKeyCredParams: [{ type: "public-key", alg: -7 /* ES256 */ }],
-        authenticatorSelection: { userVerification: "preferred" },
-        attestation: "none",
-        timeout: 60_000,
-      } as PublicKeyCredentialCreationOptions,
+      publicKey: await this.getPublicKeyCreateOptions(challenge, {
+        id: this.hashedUserId,
+        name: this.userId,
+        displayName: this.userId,
+      }),
     })) as PublicKeyCredential;
 
     const { attestationObject, clientDataJSON, getPublicKey } =
@@ -149,10 +149,12 @@ export class WebAuthn implements Authenticator<number> {
       );
     }
 
+    await this.onCreatedCredentials(this.userId, credentials);
+
     return {
       meta: {
         authority_id: KREIVO_AUTHORITY_ID,
-        device_id: await WebAuthn.getDeviceId(this),
+        device_id: await this.getDeviceId(),
         context: blockNumber,
       },
       authenticator_data: Binary.fromBytes(new Uint8Array(attestationObject)),
@@ -175,49 +177,31 @@ export class WebAuthn implements Authenticator<number> {
     context: number,
     xtc: Uint8Array
   ): Promise<TPassAuthenticate> {
-    if (!this.credentialId) {
-      throw new Error(
-        "credentialId unknown – call register() first or inject it via constructor/setCredentialId()"
-      );
-    }
-
     const challenge = await this.getChallenge(context, xtc);
-    const publicKey: PublicKeyCredentialRequestOptions = {
-      challenge,
-      allowCredentials: [
-        {
-          id: this.credentialId.buffer,
-          type: "public-key",
-          transports: ["usb", "ble", "nfc", "internal"],
-        },
-      ],
-      userVerification: "preferred",
-      timeout: 60_000,
-    };
 
     const cred = (await navigator.credentials.get({
-      publicKey,
+      publicKey: await this.getPublicKeyRequestOptions(this.userId, challenge),
     })) as PublicKeyCredential;
 
     const { authenticatorData, clientDataJSON, signature } =
       cred.response as AuthenticatorAssertionResponse;
 
-    const assertion: TAssertion<number> = {
-      meta: {
-        authority_id: KREIVO_AUTHORITY_ID,
-        user_id: Binary.fromBytes(this.hashedUserId),
-        context,
-      },
-      authenticator_data: Binary.fromBytes(new Uint8Array(authenticatorData)),
-      client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
-      signature: Binary.fromBytes(new Uint8Array(signature)),
-    };
-
     return {
-      deviceId: await WebAuthn.getDeviceId(this),
+      deviceId: await this.getDeviceId(),
       credentials: {
         tag: "WebAuthn",
-        value: Assertion.enc(assertion),
+        value: Assertion.enc({
+          meta: {
+            authority_id: KREIVO_AUTHORITY_ID,
+            user_id: Binary.fromBytes(this.hashedUserId),
+            context,
+          },
+          authenticator_data: Binary.fromBytes(
+            new Uint8Array(authenticatorData)
+          ),
+          client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
+          signature: Binary.fromBytes(new Uint8Array(signature)),
+        }),
       },
     };
   }
