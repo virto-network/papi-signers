@@ -1,3 +1,4 @@
+import { Blake2256, compactNumber } from "@polkadot-api/substrate-bindings";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
@@ -7,7 +8,6 @@ import {
 import { describe, it } from "node:test";
 import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 
-import { Blake2256 } from "@polkadot-api/substrate-bindings";
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
 import { PassAuthenticate } from "../src/types.ts";
 import assert from "node:assert";
@@ -36,15 +36,11 @@ describe("KreivoPassSigner", async () => {
       new Uint8Array(32)
     );
     const signer = new KreivoPassSigner(authenticator);
-
-    assert.equal(
-      toHex(signer.publicKey),
-      toHex(
-        Blake2256(
-          mergeUint8(authenticator.hashedUserId, authenticator.hashedUserId)
-        )
-      )
+    const addressFromHashedUserId = Blake2256(
+      mergeUint8(new Uint8Array(32).fill(0), authenticator.hashedUserId)
     );
+
+    assert.equal(toHex(signer.publicKey), toHex(addressFromHashedUserId));
   });
 
   it("constructing the extrinsic works", async () => {
@@ -78,12 +74,20 @@ describe("KreivoPassSigner", async () => {
       prelude: {
         extensionVersion: 0,
         extensions: PassAuthenticate.enc(
-          await authenticator.authenticate(blockNumber, extrinsicContext)
+          await authenticator.authenticate(blockNumber - 1, extrinsicContext)
         ),
       },
       call,
     });
 
-    assert.equal(toHex(signedTransaction), toHex(craftedSignedTransaction));
+    assert.equal(
+      toHex(signedTransaction),
+      toHex(
+        mergeUint8(
+          compactNumber.enc(craftedSignedTransaction.length),
+          craftedSignedTransaction
+        )
+      )
+    );
   });
 });
