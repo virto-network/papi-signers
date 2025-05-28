@@ -26,7 +26,7 @@ import { Assertion } from "./types.ts";
 import { InMemoryCredentialsHandler } from "./in-memory-credentials-handler.ts";
 import type { TPassAuthenticate } from "@virtonetwork/signer";
 
-export { InMemoryCredentialsHandler };
+export { InMemoryCredentialsHandler, CredentialsHandler };
 
 /** Fixed authority id for Kreivo pass‑key attestors. */
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));
