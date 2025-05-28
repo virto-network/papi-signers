@@ -1,7 +1,7 @@
 {
   "name": "@virtonetwork/signer",
   "description": "A signer for constructing a signed extrinsic using Pass-provided authenticators",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "type": "module",
   "files": [
     "dist"
@@ -35,7 +35,7 @@
     "polkadot"
   ],
   "dependencies": {
-    "@polkadot-labs/hdkd-helpers": "^0.0.16",
+    "@polkadot-labs/hdkd": "^0.0.16",
     "polkadot-api": "^1.11.0",
     "scale-ts": "^1.6.1",
     "typescript": "^5.8.3"
