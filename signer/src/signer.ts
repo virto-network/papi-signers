@@ -1,5 +1,6 @@
 import {
   Blake2256,
+  SS58String,
   compact,
   decAnyMetadata,
   unifyMetadata,
@@ -12,6 +13,7 @@ import {
   TransactionExtensionMetadata,
   UncheckedExtrinsic,
 } from "./types.ts";
+import { SignFn, createSessionKeySigner } from "./sr25519.ts";
 
 import type { Authenticator } from "./authenticator.ts";
 import { PolkadotSigner } from "polkadot-api/signer";
@@ -26,6 +28,24 @@ export class KreivoPassSigner implements PolkadotSigner {
     this.publicKey = Blake2256(
       mergeUint8(new Uint8Array(32).fill(0), authenticator.hashedUserId)
     );
+  }
+
+  /**
+   * Creates a sr25519 signer, and injects the {@link publicKey} to
+   * make the transaction maker use the Pass Account nonce.
+   *
+   * @returns A tuple with the signer and the address of the session key
+   * to be added.
+   */
+  makeSessionKeySigner(): [
+    PolkadotSigner & {
+      sign: SignFn;
+    },
+    SS58String
+  ] {
+    const { signer, address } = createSessionKeySigner();
+    signer.publicKey = this.publicKey;
+    return [signer, address];
   }
 
   async signTx(
