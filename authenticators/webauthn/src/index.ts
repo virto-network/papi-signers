@@ -16,15 +16,11 @@
  */
 import { Authenticator, DeviceId } from "@virtonetwork/signer";
 import { Binary, Blake2256 } from "@polkadot-api/substrate-bindings";
-import type {
-  CredentialsHandler,
-  GetChallenge,
-  TAttestation,
-} from "./types.ts";
+import type { Challenger, TPassAuthenticate } from "@virtonetwork/signer";
+import type { CredentialsHandler, TAttestation } from "./types.ts";
 
 import { Assertion } from "./types.ts";
 import { InMemoryCredentialsHandler } from "./in-memory-credentials-handler.ts";
-import type { TPassAuthenticate } from "@virtonetwork/signer";
 
 export { InMemoryCredentialsHandler, CredentialsHandler };
 
@@ -61,7 +57,7 @@ export class WebAuthn implements Authenticator<number> {
    */
   constructor(
     public readonly userId: string,
-    public getChallenge: GetChallenge<number>,
+    public readonly getChallenge: Challenger<number>,
     {
       publicKeyCreateOptions,
       publicKeyRequestOptions,

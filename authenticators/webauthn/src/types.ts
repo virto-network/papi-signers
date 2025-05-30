@@ -4,11 +4,6 @@ import { Codec, Struct, u32 } from "scale-ts";
 
 export type BlockHash = HexString;
 
-export type GetChallenge<Cx> = (
-  ctx: Cx,
-  xtc: Uint8Array
-) => Promise<Uint8Array>;
-
 export type hashedUserId = (userId: string) => Promise<Uint8Array>;
 
 export interface CredentialsHandler {
