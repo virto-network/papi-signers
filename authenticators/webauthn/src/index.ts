@@ -127,18 +127,18 @@ export class WebAuthn implements Authenticator<number> {
       publicKey: await this.getPublicKeyCreateOptions(challenge, {
         id: this.hashedUserId,
         name: this.userId,
-        displayName: this.userId,
+        displayName,
       }),
     })) as PublicKeyCredential;
 
-    const { attestationObject, clientDataJSON, getPublicKey } =
-      credentials.response as AuthenticatorAttestationResponse;
+    const response = credentials.response as AuthenticatorAttestationResponse;
+    const { attestationObject, clientDataJSON } = response;
 
     // Save raw credential id for future auth calls
     this.credentialId = new Uint8Array(credentials.rawId);
 
     // Ensure publicKey is obtained in the registration process.
-    const publicKey = getPublicKey();
+    const publicKey = response.getPublicKey();
     if (!publicKey) {
       throw new Error(
         "The credentials don't expose a public key. Please use another authenticator device."

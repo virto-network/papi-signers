@@ -1,7 +1,7 @@
 {
   "name": "@virtonetwork/authenticators-webauthn",
   "description": "An Authenticator compatible with KreivoPassSigner that uses the WebAuthn standard",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "files": [
     "dist"
