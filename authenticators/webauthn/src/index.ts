@@ -42,7 +42,6 @@ export class WebAuthn implements Authenticator<number> {
    * for all WebAuthn operations.
    */
   public hashedUserId: Uint8Array = new Uint8Array(32);
-  private credentialId?: Uint8Array;
 
   private getPublicKeyCreateOptions: CredentialsHandler["publicKeyCreateOptions"];
   private getPublicKeyRequestOptions: CredentialsHandler["publicKeyRequestOptions"];
@@ -51,9 +50,10 @@ export class WebAuthn implements Authenticator<number> {
   /**
    * Creates a new WebAuthn helper.
    *
-   * @param userId - Logical user identifier (e‑mail, DID, etc.).
-   * @param [credentialId] - Raw credential id obtained from a previous
-   *   registration flow; omit it if the user must enrol a new pass‑key.
+   * @param userId - Logical user identifier (e‑mail, DID, etc.)..
+   * @param getChallenge - An implementation of the `generate` method used in the challenger,
+   * @param credentialsHandler - An implementation of {@link CredentialsHandler},
+   * 
    */
   constructor(
     public readonly userId: string,
@@ -93,13 +93,8 @@ export class WebAuthn implements Authenticator<number> {
    * @returns DeviceId suitable for on‑chain storage.
    * @throws Error If this instance does not yet know a credential id.
    */
-  private async getDeviceId(): Promise<DeviceId> {
-    if (!this.credentialId) {
-      throw new Error(
-        "credentialId unknown – call register() first or inject it via constructor/setCredentialId()"
-      );
-    }
-    return Binary.fromBytes(Blake2256(this.credentialId));
+  private async getDeviceId(credentials: PublicKeyCredential): Promise<DeviceId> {
+    return Binary.fromBytes(Blake2256(new Uint8Array(credentials.rawId)));
   }
 
   /**
@@ -117,10 +112,6 @@ export class WebAuthn implements Authenticator<number> {
     blockNumber: number,
     displayName: string = this.userId
   ): Promise<TAttestation<number>> {
-    if (this.credentialId) {
-      throw new Error("Already have a credentialId; no need to register");
-    }
-
     const challenge = await this.getChallenge(blockNumber, new Uint8Array([]));
 
     const credentials = (await navigator.credentials.create({
@@ -134,11 +125,9 @@ export class WebAuthn implements Authenticator<number> {
     const response = credentials.response as AuthenticatorAttestationResponse;
     const { attestationObject, clientDataJSON } = response;
 
-    // Save raw credential id for future auth calls
-    this.credentialId = new Uint8Array(credentials.rawId);
-
     // Ensure publicKey is obtained in the registration process.
     const publicKey = response.getPublicKey();
+
     if (!publicKey) {
       throw new Error(
         "The credentials don't expose a public key. Please use another authenticator device."
@@ -150,7 +139,7 @@ export class WebAuthn implements Authenticator<number> {
     return {
       meta: {
         authority_id: KREIVO_AUTHORITY_ID,
-        device_id: await this.getDeviceId(),
+        device_id: await this.getDeviceId(credentials),
         context: blockNumber,
       },
       authenticator_data: Binary.fromBytes(new Uint8Array(attestationObject)),
@@ -175,15 +164,15 @@ export class WebAuthn implements Authenticator<number> {
   ): Promise<TPassAuthenticate> {
     const challenge = await this.getChallenge(context, xtc);
 
-    const cred = (await navigator.credentials.get({
+    const credentials = (await navigator.credentials.get({
       publicKey: await this.getPublicKeyRequestOptions(this.userId, challenge),
     })) as PublicKeyCredential;
 
     const { authenticatorData, clientDataJSON, signature } =
-      cred.response as AuthenticatorAssertionResponse;
+      credentials.response as AuthenticatorAssertionResponse;
 
     return {
-      deviceId: await this.getDeviceId(),
+      deviceId: await this.getDeviceId(credentials),
       credentials: {
         tag: "WebAuthn",
         value: Assertion.enc({
