@@ -22,6 +22,7 @@ import {
 import { Assertion } from "../src/types.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
 import { mergeUint8 } from "@polkadot-api/utils";
 
 // Origin that will be attached to the emulator (only affects RP id handling)
@@ -29,8 +30,8 @@ const ORIGIN = "https://example.com";
 
 const emulator = new WebAuthnEmulator();
 
-Object.defineProperty((globalThis as any).navigator, "credentials", {
-  configurable: true,
+Object.defineProperty(globalThis.navigator, "credentials", {
+  configurable: false,
   value: {
     /** Polyfill for `navigator.credentials.create` */
     create: async (options: CredentialCreationOptions) =>
@@ -65,6 +66,7 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
+      kreivoPassDefaultAddressGenerator,
       new TestAuthenticatiorOptions()
     ).setup();
     const attestation = await wa.register(BLOCK_NO);
@@ -99,7 +101,7 @@ describe("WebAuthn", async () => {
 
     // Ensure clientData
     const challenge = encodeBase64Url(
-      await getChallenge(BLOCK_NO, new Uint8Array([]))
+      await getChallenge(BLOCK_NO, wa.addressGenerator(wa.hashedUserId))
     );
     assert.deepEqual(JSON.parse(attestation.client_data.asText()), {
       type: "webauthn.create",
@@ -137,6 +139,7 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
+      kreivoPassDefaultAddressGenerator,
       new TestAuthenticatiorOptions()
     ).setup();
     const att = await wa.register(BLOCK_NO);
