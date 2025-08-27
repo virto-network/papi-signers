@@ -66,7 +66,6 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      kreivoPassDefaultAddressGenerator,
       new TestAuthenticatiorOptions()
     ).setup();
     const attestation = await wa.register(BLOCK_NO);
@@ -139,7 +138,6 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      kreivoPassDefaultAddressGenerator,
       new TestAuthenticatiorOptions()
     ).setup();
     const att = await wa.register(BLOCK_NO);
