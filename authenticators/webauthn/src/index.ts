@@ -62,12 +62,12 @@ export class WebAuthn implements Authenticator<number> {
   constructor(
     public readonly userId: string,
     public readonly getChallenge: Challenger<number>,
-    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator,
     {
       publicKeyCreateOptions,
       publicKeyRequestOptions,
       onCreatedCredentials,
-    }: CredentialsHandler = new InMemoryCredentialsHandler()
+    }: CredentialsHandler = new InMemoryCredentialsHandler(),
+    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
   ) {
     this.getPublicKeyCreateOptions = publicKeyCreateOptions;
     this.getPublicKeyRequestOptions = publicKeyRequestOptions;
@@ -126,14 +126,14 @@ export class WebAuthn implements Authenticator<number> {
 
     const credentials = (await navigator.credentials.create({
       publicKey: await this.getPublicKeyCreateOptions(challenge, {
-        id: this.hashedUserId,
+        id: this.hashedUserId.buffer as unknown as BufferSource,
         name: this.userId,
         displayName,
       }),
     })) as PublicKeyCredential;
 
     const response = credentials.response as AuthenticatorAttestationResponse;
-    const { attestationObject, clientDataJSON } = response;
+    const { clientDataJSON } = response;
 
     // Ensure publicKey is obtained in the registration process.
     const publicKey = response.getPublicKey();
@@ -152,7 +152,9 @@ export class WebAuthn implements Authenticator<number> {
         device_id: await this.getDeviceId(credentials),
         context: blockNumber,
       },
-      authenticator_data: Binary.fromBytes(new Uint8Array(attestationObject)),
+      authenticator_data: Binary.fromBytes(
+        new Uint8Array(response.getAuthenticatorData())
+      ),
       client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
       public_key: Binary.fromBytes(new Uint8Array(publicKey)),
     };

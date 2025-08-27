@@ -22,7 +22,7 @@ export class InMemoryCredentialsHandler implements CredentialsHandler {
   static credentialIds(userId: string): ArrayBufferLike[] {
     const credentials = this.userCredentials[userId] ?? {};
     return Object.entries(credentials).map(
-      ([, credential]) => new Uint8Array(credential.rawId)
+      ([, credential]) => new Uint8Array(credential.rawId).buffer
     );
   }
 
