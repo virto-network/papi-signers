@@ -1,4 +1,8 @@
 import {
+  AddressGenerator,
+  kreivoPassDefaultAddressGenerator,
+} from "../src/address-generator.ts";
+import {
   Authenticator,
   HashedUserId,
   TPassAuthenticate,
@@ -29,7 +33,8 @@ export class DummyAuthenticator implements Authenticator<number> {
     public readonly hashedUserId: Uint8Array,
     public deviceId: Uint8Array,
     public getChallenge = (ctx: number, xtc: Uint8Array) =>
-      Promise.resolve(Blake2256(mergeUint8(Blake2256(u32.enc(ctx)), xtc)))
+      Promise.resolve(Blake2256(mergeUint8(Blake2256(u32.enc(ctx)), xtc))),
+    public addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
   ) {}
 
   async authenticate(ctx: number, xtc: Uint8Array): Promise<TPassAuthenticate> {
