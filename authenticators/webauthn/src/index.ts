@@ -62,16 +62,17 @@ export class WebAuthn implements Authenticator<number> {
   constructor(
     public readonly userId: string,
     public readonly getChallenge: Challenger<number>,
-    {
+    handler: CredentialsHandler = new InMemoryCredentialsHandler(),
+    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
+  ) {
+    const {
       publicKeyCreateOptions,
       publicKeyRequestOptions,
       onCreatedCredentials,
-    }: CredentialsHandler = new InMemoryCredentialsHandler(),
-    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
-  ) {
-    this.getPublicKeyCreateOptions = publicKeyCreateOptions;
-    this.getPublicKeyRequestOptions = publicKeyRequestOptions;
-    this.onCreatedCredentials = onCreatedCredentials;
+    } = handler;
+    this.getPublicKeyCreateOptions = publicKeyCreateOptions.bind(handler);
+    this.getPublicKeyRequestOptions = publicKeyRequestOptions.bind(handler);
+    this.onCreatedCredentials = onCreatedCredentials.bind(handler);
   }
 
   /**
