@@ -37,7 +37,7 @@ describe("KreivoPassSigner", async () => {
     );
     const signer = new KreivoPassSigner(authenticator);
     const addressFromHashedUserId = Blake2256(
-      mergeUint8(new Uint8Array(32).fill(0), authenticator.hashedUserId)
+      mergeUint8([new Uint8Array(32).fill(0), authenticator.hashedUserId])
     );
 
     assert.equal(toHex(signer.publicKey), toHex(addressFromHashedUserId));
@@ -53,7 +53,7 @@ describe("KreivoPassSigner", async () => {
     const blockNumber = 0;
     const call = fromHex("0x0123456789ab");
     const extrinsicContext = Blake2256(
-      mergeUint8(KREIVO_EXTENSION_VERSION, call)
+      mergeUint8([KREIVO_EXTENSION_VERSION, call])
     );
 
     const signedTransaction = await signer.signTx(
@@ -83,10 +83,10 @@ describe("KreivoPassSigner", async () => {
     assert.equal(
       toHex(signedTransaction),
       toHex(
-        mergeUint8(
+        mergeUint8([
           compactNumber.enc(craftedSignedTransaction.length),
-          craftedSignedTransaction
-        )
+          craftedSignedTransaction,
+        ])
       )
     );
   });

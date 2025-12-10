@@ -7,10 +7,15 @@ export type AuthorityId = FixedSizeBinary<32>;
 export type DeviceId = FixedSizeBinary<32>;
 export type HashedUserId = FixedSizeBinary<32>;
 
-export type TPassAuthenticateCredentials = {
-  tag: "WebAuthn";
-  value: Uint8Array;
-};
+export type TPassAuthenticateCredentials =
+  | {
+      tag: "WebAuthn";
+      value: Uint8Array;
+    }
+  | {
+      tag: "SubstrateKey";
+      value: Uint8Array;
+    };
 
 export type TPassAuthenticate =
   | {
@@ -29,6 +34,7 @@ export const PassAuthenticate: Codec<TPassAuthenticate> = Option(
     deviceId: Bin(32),
     credentials: Enum({
       WebAuthn: identityCodec,
+      SubstrateKey: identityCodec,
     }),
   })
 );
