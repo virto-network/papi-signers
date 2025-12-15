@@ -1,0 +1,52 @@
+{
+  "name": "@virtonetwork/authenticators-substrate",
+  "description": "An Authenticator compatible with KreivoPassSigner that uses substrate-style signatures",
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "module": "./dist/esm/index.js",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "scripts": {
+    "test": "node --loader ts-node/esm test/test.ts",
+    "build": "tsc && tsc -p tsconfig.cjs.json",
+    "prepack": "npm run build"
+  },
+  "author": "Virto Network <contact@virto.networks>",
+  "license": "MIT",
+  "keywords": [
+    "virto-sdk",
+    "signer",
+    "papi",
+    "scale",
+    "polkadot.js",
+    "polkadot"
+  ],
+  "dependencies": {
+    "@polkadot-labs/hdkd": "0.0.26",
+    "@virtonetwork/signer": "^1.2.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "url": "https://github.com/virto-network/papi-signers",
+    "directory": "authenticators/substrate"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  }
+}
