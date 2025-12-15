@@ -1,3 +1,7 @@
+import {
+  AddressGenerator,
+  kreivoPassDefaultAddressGenerator,
+} from "@virtonetwork/signer";
 /**
  * WebAuthn pass‑key authenticator for Virto Network.
  *
@@ -53,20 +57,22 @@ export class WebAuthn implements Authenticator<number> {
    * @param userId - Logical user identifier (e‑mail, DID, etc.)..
    * @param getChallenge - An implementation of the `generate` method used in the challenger,
    * @param credentialsHandler - An implementation of {@link CredentialsHandler},
-   * 
+   *
    */
   constructor(
     public readonly userId: string,
     public readonly getChallenge: Challenger<number>,
-    {
+    handler: CredentialsHandler = new InMemoryCredentialsHandler(),
+    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
+  ) {
+    const {
       publicKeyCreateOptions,
       publicKeyRequestOptions,
       onCreatedCredentials,
-    }: CredentialsHandler = new InMemoryCredentialsHandler()
-  ) {
-    this.getPublicKeyCreateOptions = publicKeyCreateOptions;
-    this.getPublicKeyRequestOptions = publicKeyRequestOptions;
-    this.onCreatedCredentials = onCreatedCredentials;
+    } = handler;
+    this.getPublicKeyCreateOptions = publicKeyCreateOptions.bind(handler);
+    this.getPublicKeyRequestOptions = publicKeyRequestOptions.bind(handler);
+    this.onCreatedCredentials = onCreatedCredentials.bind(handler);
   }
 
   /**
@@ -93,7 +99,9 @@ export class WebAuthn implements Authenticator<number> {
    * @returns DeviceId suitable for on‑chain storage.
    * @throws Error If this instance does not yet know a credential id.
    */
-  private async getDeviceId(credentials: PublicKeyCredential): Promise<DeviceId> {
+  private async getDeviceId(
+    credentials: PublicKeyCredential
+  ): Promise<DeviceId> {
     return Binary.fromBytes(Blake2256(new Uint8Array(credentials.rawId)));
   }
 
@@ -112,18 +120,21 @@ export class WebAuthn implements Authenticator<number> {
     blockNumber: number,
     displayName: string = this.userId
   ): Promise<TAttestation<number>> {
-    const challenge = await this.getChallenge(blockNumber, new Uint8Array([]));
+    const challenge = await this.getChallenge(
+      blockNumber,
+      this.addressGenerator(this.hashedUserId)
+    );
 
     const credentials = (await navigator.credentials.create({
       publicKey: await this.getPublicKeyCreateOptions(challenge, {
-        id: this.hashedUserId,
+        id: this.hashedUserId.buffer as unknown as BufferSource,
         name: this.userId,
         displayName,
       }),
     })) as PublicKeyCredential;
 
     const response = credentials.response as AuthenticatorAttestationResponse;
-    const { attestationObject, clientDataJSON } = response;
+    const { clientDataJSON } = response;
 
     // Ensure publicKey is obtained in the registration process.
     const publicKey = response.getPublicKey();
@@ -142,7 +153,9 @@ export class WebAuthn implements Authenticator<number> {
         device_id: await this.getDeviceId(credentials),
         context: blockNumber,
       },
-      authenticator_data: Binary.fromBytes(new Uint8Array(attestationObject)),
+      authenticator_data: Binary.fromBytes(
+        new Uint8Array(response.getAuthenticatorData())
+      ),
       client_data: Binary.fromBytes(new Uint8Array(clientDataJSON)),
       public_key: Binary.fromBytes(new Uint8Array(publicKey)),
     };

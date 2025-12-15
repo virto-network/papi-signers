@@ -2,6 +2,7 @@
   "name": "virto-papi-signers",
   "private": "true",
   "workspaces": [
+    "e2e-tests",
     "signer",
     "authenticators/*"
   ],

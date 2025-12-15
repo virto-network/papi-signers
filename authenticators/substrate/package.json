@@ -1,7 +1,7 @@
 {
-  "name": "@virtonetwork/signer",
-  "description": "A signer for constructing a signed extrinsic using Pass-provided authenticators",
-  "version": "1.2.0",
+  "name": "@virtonetwork/authenticators-substrate",
+  "description": "An Authenticator compatible with KreivoPassSigner that uses substrate-style signatures",
+  "version": "1.0.0",
   "type": "module",
   "files": [
     "dist"
@@ -35,19 +35,15 @@
     "polkadot"
   ],
   "dependencies": {
-    "@polkadot-labs/hdkd": "^0.0.22",
-    "polkadot-api": "^1.11.0",
-    "scale-ts": "^1.6.1",
-    "typescript": "^5.8.3"
+    "@polkadot-labs/hdkd": "0.0.26",
+    "@virtonetwork/signer": "^1.2.0"
   },
   "devDependencies": {
-    "esmock": "^2.7.0",
-    "sinon": "^20.0.0",
     "ts-node": "^10.9.2"
   },
   "repository": {
     "url": "https://github.com/virto-network/papi-signers",
-    "directory": "signer"
+    "directory": "authenticators/substrate"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

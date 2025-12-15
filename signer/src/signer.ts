@@ -25,9 +25,7 @@ export class KreivoPassSigner implements PolkadotSigner {
   constructor(private authenticator: Authenticator<number>) {
     // Calcualte the pass account's "public key" (map to address is 1:1, so it's safe
     // to say this is a public key) based on
-    this.publicKey = Blake2256(
-      mergeUint8(new Uint8Array(32).fill(0), authenticator.hashedUserId)
-    );
+    this.publicKey = authenticator.addressGenerator(authenticator.hashedUserId);
   }
 
   /**
