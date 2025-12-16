@@ -1,0 +1,13 @@
+{
+  "name": "e2e-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "E2E testing for Virto Signer",
+  "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-labs/hdkd-helpers": "^0.0.22",
+    "@virtonetwork/authenticators-webauthn": "1.1.2",
+    "polkadot-api": "^1.16.2"
+  }
+}
