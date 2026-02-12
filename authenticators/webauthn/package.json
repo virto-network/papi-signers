@@ -1,7 +1,7 @@
 {
   "name": "@virtonetwork/authenticators-webauthn",
   "description": "An Authenticator compatible with KreivoPassSigner that uses the WebAuthn standard",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "files": [
     "dist"
@@ -21,7 +21,7 @@
   "types": "./dist/esm/index.d.ts",
   "scripts": {
     "test": "node --loader ts-node/esm test/test.ts",
-    "build": "tsc && tsc -p tsconfig.cjs.json",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
     "prepack": "npm run build"
   },
   "author": "Virto Network <contact@virto.networks>",
