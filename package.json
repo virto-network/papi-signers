@@ -9,6 +9,10 @@
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "publish": "npm publish --workspaces --if-present"
+    "publish-all": "npm publish --workspaces --if-present",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8"
   }
 }
