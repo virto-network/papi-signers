@@ -24,7 +24,7 @@ describe("SubstrateKeys", () => {
 
       const challenge = await getChallenge(
         BLOCK_NO,
-        kreivoPassDefaultAddressGenerator(sk.hashedUserId)
+        kreivoPassDefaultAddressGenerator(sk.hashedUserId),
       );
       const signedMessage = SignedMessage.enc({
         context: BLOCK_NO,
@@ -33,8 +33,8 @@ describe("SubstrateKeys", () => {
       });
 
       assert.deepEqual(
-        keyRegistration.signature.asBytes(),
-        signer.sign(signedMessage)
+        keyRegistration.signature.value.asBytes(),
+        signer.sign(signedMessage),
       );
     });
   });
@@ -59,10 +59,13 @@ describe("SubstrateKeys", () => {
         keySignature?.credentials.value,
         KeySignature.enc({
           message,
-          signature: Binary.fromBytes(
-            await signer.sign(SignedMessage.enc(message))
-          ),
-        })
+          signature: {
+            type: "Ed25519",
+            value: Binary.fromBytes(
+              await signer.sign(SignedMessage.enc(message)),
+            ),
+          },
+        }),
       );
     });
   });

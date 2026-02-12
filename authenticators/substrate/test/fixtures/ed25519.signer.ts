@@ -18,7 +18,7 @@ import { ed25519CreateDerive } from "@polkadot-labs/hdkd";
  */
 export function createEd25519Signer(): SubstrateSigner {
   const miniSecret = entropyToMiniSecret(
-    mnemonicToEntropy(generateMnemonic(256))
+    mnemonicToEntropy(generateMnemonic(256)),
   );
   const derive = ed25519CreateDerive(miniSecret);
 
@@ -26,6 +26,7 @@ export function createEd25519Signer(): SubstrateSigner {
 
   return {
     sign: (bytes: Uint8Array) => keypair.sign(Binary.fromBytes(bytes).asHex()),
+    signingType: "Ed25519",
     publicKey: keypair.publicKey,
   };
 }

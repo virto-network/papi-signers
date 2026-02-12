@@ -1,10 +1,16 @@
-import { Bin, Binary, FixedSizeBinary } from "@polkadot-api/substrate-bindings";
+import {
+  Bin,
+  Binary,
+  FixedSizeBinary,
+  Variant,
+} from "@polkadot-api/substrate-bindings";
 import { Codec, Struct, u32 } from "scale-ts";
 
 import { AuthorityId } from "@virtonetwork/signer";
 
 export type SubstrateSigner = {
   publicKey: Uint8Array;
+  signingType: "Ed25519" | "Sr25519" | "Ecdsa" | "Eth";
   sign: (bytes: Uint8Array) => Promise<Uint8Array> | Uint8Array;
 };
 
@@ -13,6 +19,31 @@ export type TSignedMessage<Cx> = {
   challenge: Binary;
   authority_id: AuthorityId;
 };
+
+export type TMutiSignature =
+  | {
+      type: "Ed25519";
+      value: FixedSizeBinary<64>;
+    }
+  | {
+      type: "Sr25519";
+      value: FixedSizeBinary<64>;
+    }
+  | {
+      type: "Ecdsa";
+      value: FixedSizeBinary<65>;
+    }
+  | {
+      type: "Eth";
+      value: FixedSizeBinary<65>;
+    };
+
+export const MultiSignature: Codec<TMutiSignature> = Variant({
+  Ed25519: Bin(64),
+  Sr25519: Bin(64),
+  Ecdsa: Bin(65),
+  Eth: Bin(65),
+});
 
 export const SignedMessage: Codec<TSignedMessage<number>> = Struct({
   context: u32,
@@ -23,15 +54,15 @@ export const SignedMessage: Codec<TSignedMessage<number>> = Struct({
 export type TKeyRegistration<Cx> = {
   message: TSignedMessage<Cx>;
   public: FixedSizeBinary<32>;
-  signature: AuthorityId;
+  signature: TMutiSignature;
 };
 
 export type TKeySignature<Cx> = {
   message: TSignedMessage<Cx>;
-  signature: Binary;
+  signature: TMutiSignature;
 };
 
 export const KeySignature: Codec<TKeySignature<number>> = Struct({
   message: SignedMessage,
-  signature: Bin(),
+  signature: MultiSignature,
 });
