@@ -16,7 +16,7 @@ export type SubstrateSigner = {
 
 export type TSignedMessage<Cx> = {
   context: Cx;
-  challenge: Binary;
+  challenge: FixedSizeBinary<32>;
   authority_id: AuthorityId;
 };
 
@@ -47,7 +47,7 @@ export const MultiSignature: Codec<TMutiSignature> = Variant({
 
 export const SignedMessage: Codec<TSignedMessage<number>> = Struct({
   context: u32,
-  challenge: Bin(),
+  challenge: Bin(32),
   authority_id: Bin(32),
 });
 
@@ -56,6 +56,12 @@ export type TKeyRegistration<Cx> = {
   public: FixedSizeBinary<32>;
   signature: TMutiSignature;
 };
+
+export const KeyRegistration: Codec<TKeyRegistration<number>> = Struct({
+  message: SignedMessage,
+  public: Bin(32),
+  signature: MultiSignature,
+});
 
 export type TKeySignature<Cx> = {
   message: TSignedMessage<Cx>;

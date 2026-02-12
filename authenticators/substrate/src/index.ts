@@ -6,14 +6,24 @@ import {
   kreivoPassDefaultAddressGenerator,
 } from "@virtonetwork/signer";
 import {
+  KeyRegistration,
   KeySignature,
   SignedMessage,
   SubstrateSigner,
   TKeyRegistration,
+  TKeySignature,
   TSignedMessage,
 } from "./types.ts";
 
 import { Binary } from "polkadot-api";
+
+export type {
+  SubstrateSigner,
+  TKeyRegistration,
+  TKeySignature,
+  TSignedMessage,
+};
+export { SignedMessage, KeySignature, KeyRegistration };
 
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));
 
