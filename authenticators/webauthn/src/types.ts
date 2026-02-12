@@ -1,6 +1,10 @@
-import { AuthorityId, DeviceId, HashedUserId } from "@virtonetwork/signer";
-import { Bin, Binary, HexString } from "@polkadot-api/substrate-bindings";
-import { Codec, Struct, u32 } from "scale-ts";
+import {
+  Bin,
+  type Binary,
+  type HexString,
+} from "@polkadot-api/substrate-bindings";
+import type { AuthorityId, DeviceId, HashedUserId } from "@virtonetwork/signer";
+import { type Codec, Struct, u32 } from "scale-ts";
 
 export type BlockHash = HexString;
 

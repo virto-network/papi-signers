@@ -1,6 +1,6 @@
-import { AddressGenerator } from "./address-generator.ts";
-import { Challenger } from "./challenger.ts";
-import { TPassAuthenticate } from "./types.ts";
+import type { AddressGenerator } from "./address-generator.ts";
+import type { Challenger } from "./challenger.ts";
+import type { TPassAuthenticate } from "./types.ts";
 
 export interface Authenticator<Ctx> {
   readonly hashedUserId: Uint8Array;

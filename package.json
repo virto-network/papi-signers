@@ -10,9 +10,12 @@
     "test": "npm test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "publish-all": "npm publish --workspaces --if-present",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "check": "npx @biomejs/biome check .",
+    "format": "npx @biomejs/biome check --write ."
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.15",
     "@changesets/cli": "^2.29.8"
   }
 }

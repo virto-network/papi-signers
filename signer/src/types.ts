@@ -1,7 +1,6 @@
 import { Bin, Bytes } from "@polkadot-api/substrate-bindings";
-import { Codec, Enum, Option, Struct, createCodec, u8 } from "scale-ts";
-
-import { FixedSizeBinary } from "polkadot-api";
+import type { FixedSizeBinary } from "polkadot-api";
+import { type Codec, createCodec, Enum, Option, Struct, u8 } from "scale-ts";
 
 export type AuthorityId = FixedSizeBinary<32>;
 export type DeviceId = FixedSizeBinary<32>;

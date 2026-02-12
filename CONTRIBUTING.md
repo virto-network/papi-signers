@@ -39,6 +39,26 @@ Run tests across all workspaces:
 npm test
 ```
 
+## Code Style
+
+We use [Biome](https://biomejs.dev/) for formatting and linting.
+
+### Check Code
+
+To check for linting errors and formatting issues:
+
+```bash
+npm run check
+```
+
+### Fix Code
+
+To automatically format code and fix safe lint errors:
+
+```bash
+npm run format
+```
+
 ## Release Workflow (Versioning)
 
 We use [Changesets](https://github.com/changesets/changesets) to manage versioning and releases.

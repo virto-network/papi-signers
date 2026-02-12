@@ -1,29 +1,27 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { describe, it } from "node:test";
 import { Blake2256, u32 } from "@polkadot-api/substrate-bindings";
+import { mergeUint8 } from "@polkadot-api/utils";
 import {
-  CollectedClientData,
-  WebAuthnEmulator,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from "@simplewebauthn/server";
+import {
+  decodeAttestationObject,
+  parseAuthenticatorData,
+} from "@simplewebauthn/server/helpers";
+import {
+  type CollectedClientData,
   encodeBase64Url,
+  WebAuthnEmulator,
 } from "nid-webauthn-emulator";
 import {
   InMemoryCredentialsHandler,
   KREIVO_AUTHORITY_ID,
   WebAuthn,
 } from "../src/index.ts";
-import {
-  decodeAttestationObject,
-  parseAuthenticatorData,
-} from "@simplewebauthn/server/helpers";
-import { describe, it } from "node:test";
-import {
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
-} from "@simplewebauthn/server";
-
 import { Assertion } from "../src/types.ts";
-import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
-import { mergeUint8 } from "@polkadot-api/utils";
 
 // Origin that will be attached to the emulator (only affects RP id handling)
 const ORIGIN = "https://example.com";
@@ -51,7 +49,7 @@ describe("WebAuthn", async () => {
 
   class TestAuthenticatiorOptions extends InMemoryCredentialsHandler {
     static deviceId(userId: string) {
-      const id = this.credentialIds(userId).at(0);
+      const id = TestAuthenticatiorOptions.credentialIds(userId).at(0);
       return id !== undefined ? Blake2256(new Uint8Array(id)) : undefined;
     }
   }
@@ -66,41 +64,41 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      new TestAuthenticatiorOptions(),
+      new TestAuthenticatiorOptions()
     ).setup();
     const attestation = await wa.register(BLOCK_NO);
 
     // Ensure meta
     assert.deepEqual(
       attestation.meta.authority_id.asBytes(),
-      KREIVO_AUTHORITY_ID.asBytes(),
+      KREIVO_AUTHORITY_ID.asBytes()
     );
     assert.deepEqual(
       attestation.meta.device_id.asBytes(),
-      TestAuthenticatiorOptions.deviceId(userId),
+      TestAuthenticatiorOptions.deviceId(userId)
     );
     assert.equal(attestation.meta.context, BLOCK_NO);
 
     // Ensure authenticatorData
     const attestationObject = decodeAttestationObject(
-      attestation.authenticator_data.asBytes(),
+      attestation.authenticator_data.asBytes()
     );
     const authenticatorData = parseAuthenticatorData(
-      attestationObject.get("authData"),
+      attestationObject.get("authData")
     );
 
     assert.deepEqual(
       authenticatorData.rpIdHash,
-      new Uint8Array(createHash("sha256").update("example.com").digest()),
+      new Uint8Array(createHash("sha256").update("example.com").digest())
     );
     assert.deepEqual(
       authenticatorData.credentialID,
-      TestAuthenticatiorOptions.credentialIds(userId).at(0),
+      TestAuthenticatiorOptions.credentialIds(userId).at(0)
     );
 
     // Ensure clientData
     const challenge = encodeBase64Url(
-      await getChallenge(BLOCK_NO, wa.addressGenerator(wa.hashedUserId)),
+      await getChallenge(BLOCK_NO, wa.addressGenerator(wa.hashedUserId))
     );
     assert.deepEqual(JSON.parse(attestation.client_data.asText()), {
       type: "webauthn.create",
@@ -120,7 +118,7 @@ describe("WebAuthn", async () => {
         type: "public-key",
         response: {
           attestationObject: encodeBase64Url(
-            attestation.authenticator_data.asBytes(),
+            attestation.authenticator_data.asBytes()
           ),
           clientDataJSON: encodeBase64Url(attestation.client_data.asBytes()),
         },
@@ -138,15 +136,15 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      new TestAuthenticatiorOptions(),
+      new TestAuthenticatiorOptions()
     ).setup();
     const att = await wa.register(BLOCK_NO);
 
     const attestationObject = decodeAttestationObject(
-      att.authenticator_data.asBytes(),
+      att.authenticator_data.asBytes()
     );
     const attAuthenticatorData = parseAuthenticatorData(
-      attestationObject.get("authData"),
+      attestationObject.get("authData")
     );
 
     // Generate arbitrary challenge
@@ -157,7 +155,7 @@ describe("WebAuthn", async () => {
     // deviceId should equal Blake2256(credentialId)
     assert.deepEqual(
       passAuthenticate?.deviceId.asBytes(),
-      TestAuthenticatiorOptions.deviceId(userId),
+      TestAuthenticatiorOptions.deviceId(userId)
     );
 
     // This authenticator resolves to PassCredentials::WebAuithn(credentials)
@@ -169,7 +167,7 @@ describe("WebAuthn", async () => {
     // Validate metadata
     assert.deepEqual(
       decodedAssertion.meta.authority_id.asText(),
-      KREIVO_AUTHORITY_ID.asText(),
+      KREIVO_AUTHORITY_ID.asText()
     );
     assert.deepEqual(decodedAssertion.meta.user_id.asBytes(), wa.hashedUserId);
     assert.equal(decodedAssertion.meta.context, BLOCK_NO);
@@ -189,10 +187,10 @@ describe("WebAuthn", async () => {
         rawId: encodeBase64Url(attAuthenticatorData.credentialID!),
         response: {
           authenticatorData: encodeBase64Url(
-            decodedAssertion.authenticator_data.asBytes(),
+            decodedAssertion.authenticator_data.asBytes()
           ),
           clientDataJSON: encodeBase64Url(
-            decodedAssertion.client_data.asBytes(),
+            decodedAssertion.client_data.asBytes()
           ),
           signature: encodeBase64Url(decodedAssertion.signature.asBytes()),
         },

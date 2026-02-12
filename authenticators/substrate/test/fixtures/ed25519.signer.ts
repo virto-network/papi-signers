@@ -1,12 +1,11 @@
+import { ed25519CreateDerive } from "@polkadot-labs/hdkd";
 import {
   entropyToMiniSecret,
   generateMnemonic,
   mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
-
 import { Binary } from "polkadot-api";
-import { SubstrateSigner } from "../../src/types.ts";
-import { ed25519CreateDerive } from "@polkadot-labs/hdkd";
+import type { SubstrateSigner } from "../../src/types.ts";
 
 /**
  * Makes a random ed25519 signer.
@@ -18,7 +17,7 @@ import { ed25519CreateDerive } from "@polkadot-labs/hdkd";
  */
 export function createEd25519Signer(): SubstrateSigner {
   const miniSecret = entropyToMiniSecret(
-    mnemonicToEntropy(generateMnemonic(256)),
+    mnemonicToEntropy(generateMnemonic(256))
   );
   const derive = ed25519CreateDerive(miniSecret);
 

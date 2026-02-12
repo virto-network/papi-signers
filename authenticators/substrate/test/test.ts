@@ -1,12 +1,15 @@
-import { Binary, Blake2256, u32 } from "@polkadot-api/substrate-bindings";
-import { KREIVO_AUTHORITY_ID, SubstrateKey } from "../src/index.ts";
-import { KeySignature, SignedMessage, TSignedMessage } from "../src/types.ts";
-import { describe, it } from "node:test";
-
 import assert from "node:assert";
-import { createEd25519Signer } from "./fixtures/ed25519.signer.ts";
-import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
+import { describe, it } from "node:test";
+import { Binary, Blake2256, u32 } from "@polkadot-api/substrate-bindings";
 import { mergeUint8 } from "@polkadot-api/utils";
+import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
+import { KREIVO_AUTHORITY_ID, SubstrateKey } from "../src/index.ts";
+import {
+  KeySignature,
+  SignedMessage,
+  type TSignedMessage,
+} from "../src/types.ts";
+import { createEd25519Signer } from "./fixtures/ed25519.signer.ts";
 
 describe("SubstrateKeys", () => {
   const BLOCK_NO = 777;
@@ -24,7 +27,7 @@ describe("SubstrateKeys", () => {
 
       const challenge = await getChallenge(
         BLOCK_NO,
-        kreivoPassDefaultAddressGenerator(sk.hashedUserId),
+        kreivoPassDefaultAddressGenerator(sk.hashedUserId)
       );
       const signedMessage = SignedMessage.enc({
         context: BLOCK_NO,
@@ -34,7 +37,7 @@ describe("SubstrateKeys", () => {
 
       assert.deepEqual(
         keyRegistration.signature.value.asBytes(),
-        signer.sign(signedMessage),
+        signer.sign(signedMessage)
       );
     });
   });
@@ -62,10 +65,10 @@ describe("SubstrateKeys", () => {
           signature: {
             type: "Ed25519",
             value: Binary.fromBytes(
-              await signer.sign(SignedMessage.enc(message)),
+              await signer.sign(SignedMessage.enc(message))
             ),
           },
-        }),
+        })
       );
     });
   });

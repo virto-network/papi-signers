@@ -1,12 +1,10 @@
 import {
   Bin,
-  Binary,
-  FixedSizeBinary,
+  type FixedSizeBinary,
   Variant,
 } from "@polkadot-api/substrate-bindings";
-import { Codec, Struct, u32 } from "scale-ts";
-
-import { AuthorityId } from "@virtonetwork/signer";
+import type { AuthorityId } from "@virtonetwork/signer";
+import { type Codec, Struct, u32 } from "scale-ts";
 
 export type SubstrateSigner = {
   publicKey: Uint8Array;

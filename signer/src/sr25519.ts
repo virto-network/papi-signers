@@ -1,13 +1,12 @@
-import { PolkadotSigner, SS58String } from "polkadot-api";
+import { sr25519CreateDerive } from "@polkadot-labs/hdkd";
 import {
   entropyToMiniSecret,
   generateMnemonic,
   mnemonicToEntropy,
   ss58Encode,
 } from "@polkadot-labs/hdkd-helpers";
-
+import type { PolkadotSigner, SS58String } from "polkadot-api";
 import { getPolkadotSigner } from "polkadot-api/signer";
-import { sr25519CreateDerive } from "@polkadot-labs/hdkd";
 
 /** A function that signs */
 export type SignFn = (input: Uint8Array) => Promise<Uint8Array> | Uint8Array;

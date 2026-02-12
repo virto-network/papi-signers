@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("node:fs");
+const path = require("node:path");
 
 const dir = process.argv[2];
 
 if (!dir) {
-  console.error('Usage: node fix-cjs.js <directory>');
+  console.error("Usage: node fix-cjs.js <directory>");
   process.exit(1);
 }
 
@@ -16,19 +16,22 @@ function walk(directory) {
 
     if (stat.isDirectory()) {
       walk(fullPath);
-    } else if (file.endsWith('.js')) {
-      const content = fs.readFileSync(fullPath, 'utf8');
-      const newContent = content.replace(/require\("(\..+?)\.js"\)/g, 'require("$1.cjs")');
-      const newPath = fullPath.replace(/\.js$/, '.cjs');
+    } else if (file.endsWith(".js")) {
+      const content = fs.readFileSync(fullPath, "utf8");
+      const newContent = content.replace(
+        /require\("(\..+?)\.js"\)/g,
+        'require("$1.cjs")'
+      );
+      const newPath = fullPath.replace(/\.js$/, ".cjs");
 
       fs.writeFileSync(newPath, newContent);
       fs.unlinkSync(fullPath);
       console.log(`Converted: ${file} -> ${path.basename(newPath)}`);
-    } else if (file.endsWith('.js.map')) {
-      const content = fs.readFileSync(fullPath, 'utf8');
+    } else if (file.endsWith(".js.map")) {
+      const content = fs.readFileSync(fullPath, "utf8");
       const json = JSON.parse(content);
-      json.file = json.file.replace(/\.js$/, '.cjs');
-      const newPath = fullPath.replace(/\.js\.map$/, '.cjs.map');
+      json.file = json.file.replace(/\.js$/, ".cjs");
+      const newPath = fullPath.replace(/\.js\.map$/, ".cjs.map");
 
       fs.writeFileSync(newPath, JSON.stringify(json));
       fs.unlinkSync(fullPath);

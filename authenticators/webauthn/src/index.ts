@@ -1,7 +1,5 @@
-import {
-  AddressGenerator,
-  kreivoPassDefaultAddressGenerator,
-} from "@virtonetwork/signer";
+import { Binary, Blake2256 } from "@polkadot-api/substrate-bindings";
+import type { Challenger, TPassAuthenticate } from "@virtonetwork/signer";
 /**
  * WebAuthn pass‑key authenticator for Virto Network.
  *
@@ -18,15 +16,17 @@ import {
  *
  * @module WebAuthn
  */
-import { Authenticator, DeviceId } from "@virtonetwork/signer";
-import { Binary, Blake2256 } from "@polkadot-api/substrate-bindings";
-import type { Challenger, TPassAuthenticate } from "@virtonetwork/signer";
-import type { CredentialsHandler, TAttestation } from "./types.ts";
-
-import { Assertion } from "./types.ts";
+import {
+  type AddressGenerator,
+  type Authenticator,
+  type DeviceId,
+  kreivoPassDefaultAddressGenerator,
+} from "@virtonetwork/signer";
 import { InMemoryCredentialsHandler } from "./in-memory-credentials-handler.ts";
+import type { CredentialsHandler, TAttestation } from "./types.ts";
+import { Assertion } from "./types.ts";
 
-export { InMemoryCredentialsHandler, CredentialsHandler };
+export { InMemoryCredentialsHandler, type CredentialsHandler };
 
 /** Fixed authority id for Kreivo pass‑key attestors. */
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));

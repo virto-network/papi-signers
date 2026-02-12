@@ -1,4 +1,4 @@
-import { CredentialsHandler } from "./types.ts";
+import type { CredentialsHandler } from "./types.ts";
 
 export class InMemoryCredentialsHandler implements CredentialsHandler {
   private static userCredentials: Record<
@@ -11,16 +11,17 @@ export class InMemoryCredentialsHandler implements CredentialsHandler {
     f: (map: Record<string, PublicKeyCredential>) => void
   ) {
     try {
-      let map = this.userCredentials[userId] ?? {};
+      const map = InMemoryCredentialsHandler.userCredentials[userId] ?? {};
       f(map);
-      this.userCredentials[userId] = map;
+      InMemoryCredentialsHandler.userCredentials[userId] = map;
     } catch {
       /* on error, no-op */
     }
   }
 
   static credentialIds(userId: string): ArrayBufferLike[] {
-    const credentials = this.userCredentials[userId] ?? {};
+    const credentials =
+      InMemoryCredentialsHandler.userCredentials[userId] ?? {};
     return Object.entries(credentials).map(
       ([, credential]) => new Uint8Array(credential.rawId).buffer
     );

@@ -1,16 +1,8 @@
-import { Binary, PolkadotClient } from "polkadot-api";
-import {
-  CredentialsHandler,
-  WebAuthn as PasskeysAuthenticator,
-} from "@virtonetwork/authenticators-webauthn";
-
-import { Blake2256 } from "@polkadot-api/substrate-bindings";
-import { KreivoPassSigner } from "@virtonetwork/signer";
-import { kreivo } from "@polkadot-api/descriptors";
-import { mergeUint8 } from "polkadot-api/utils";
-import { polkadotSigner } from "./signer.ts";
-import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import test from "node:test";
+
+import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
+import { WebAuthn as PasskeysAuthenticator } from "@virtonetwork/authenticators-webauthn";
+import { KreivoPassSigner } from "@virtonetwork/signer";
 
 test("registration works", async () => {
   const passkeysAuthenticator = await new PasskeysAuthenticator(
@@ -19,12 +11,12 @@ test("registration works", async () => {
   ).setup();
 
   const passSigner = new KreivoPassSigner(passkeysAuthenticator);
-  const passAccountAddress = ss58Encode(passSigner.publicKey);
+  const _passAccountAddress = ss58Encode(passSigner.publicKey);
 
   /// Registers Charlotte (esto viene en VOS)
   const client = await this.getClient();
   const finalizedBlock = await client.getFinalizedBlock();
-  const attestation = await passkeysAuthenticator.register(
+  const _attestation = await passkeysAuthenticator.register(
     finalizedBlock.number
   );
 });

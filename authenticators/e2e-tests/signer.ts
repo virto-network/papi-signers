@@ -1,12 +1,11 @@
+import { sr25519CreateDerive } from "@polkadot-labs/hdkd";
 import {
   DEV_PHRASE,
   entropyToMiniSecret,
   mnemonicToEntropy,
   ss58Encode,
 } from "@polkadot-labs/hdkd-helpers";
-
 import { getPolkadotSigner } from "polkadot-api/signer";
-import { sr25519CreateDerive } from "@polkadot-labs/hdkd";
 
 const entropy = mnemonicToEntropy(DEV_PHRASE);
 const seed = entropyToMiniSecret(entropy);

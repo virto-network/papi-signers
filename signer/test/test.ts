@@ -1,17 +1,16 @@
+import assert from "node:assert";
+import { describe, it } from "node:test";
 import { Blake2256, compactNumber } from "@polkadot-api/substrate-bindings";
+import esmock from "esmock";
+import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
   KREIVO_EXTENSION_VERSION,
+  PassAuthenticate,
   UncheckedExtrinsic,
 } from "../src/types.ts";
-import { describe, it } from "node:test";
-import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
-
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
-import { PassAuthenticate } from "../src/types.ts";
-import assert from "node:assert";
-import esmock from "esmock";
 
 describe("KreivoPassSigner", async () => {
   const { KreivoPassSigner } = await esmock<typeof import("../src/signer.ts")>(

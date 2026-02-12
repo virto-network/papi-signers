@@ -1,23 +1,23 @@
 import {
   Blake2256,
-  SS58String,
   compact,
   decAnyMetadata,
+  type SS58String,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
+import { mergeUint8 } from "@polkadot-api/utils";
+import type { PolkadotSigner } from "polkadot-api/signer";
+
+import type { Authenticator } from "./authenticator.ts";
+import { createSessionKeySigner, type SignFn } from "./sr25519.ts";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
   KREIVO_EXTENSION_VERSION,
   PassAuthenticate,
-  TransactionExtensionMetadata,
+  type TransactionExtensionMetadata,
   UncheckedExtrinsic,
 } from "./types.ts";
-import { SignFn, createSessionKeySigner } from "./sr25519.ts";
-
-import type { Authenticator } from "./authenticator.ts";
-import { PolkadotSigner } from "polkadot-api/signer";
-import { mergeUint8 } from "@polkadot-api/utils";
 
 export class KreivoPassSigner implements PolkadotSigner {
   publicKey: Uint8Array<ArrayBufferLike>;
@@ -51,12 +51,12 @@ export class KreivoPassSigner implements PolkadotSigner {
     signedExtensions: Record<string, TransactionExtensionMetadata>,
     encodedMetadata: Uint8Array,
     atBlockNumber: number,
-    hasher = Blake2256,
+    hasher = Blake2256
   ): Promise<Uint8Array> {
     const metadata = unifyMetadata(decAnyMetadata(encodedMetadata));
 
     const txExtensions = Object.values(metadata.extrinsic.signedExtensions)
-      .flatMap((x) => x)
+      .flat()
       .map(({ identifier }) => {
         const signedExtension = signedExtensions[identifier];
 
@@ -70,7 +70,7 @@ export class KreivoPassSigner implements PolkadotSigner {
       call,
       txExtensions,
       atBlockNumber - 1,
-      hasher,
+      hasher
     ).then((xts) => xts.map((x) => x.value));
 
     const xt = UncheckedExtrinsic.enc({
@@ -88,10 +88,10 @@ export class KreivoPassSigner implements PolkadotSigner {
     call: Uint8Array,
     txExtensions: TransactionExtensionMetadata[],
     blockNumber: number,
-    hasher = Blake2256,
+    hasher = Blake2256
   ): Promise<TransactionExtensionMetadata[]> {
     const ix = txExtensions.findIndex(
-      (ext) => ext.identifier === "PassAuthenticate",
+      (ext) => ext.identifier === "PassAuthenticate"
     );
     if (ix === -1) {
       throw new Error("PassAuthenticate extension not found in txExtensions");
@@ -107,11 +107,11 @@ export class KreivoPassSigner implements PolkadotSigner {
 
     // From https://github.com/virto-network/frame-contrib/pull/47
     const extrinsicContext = hasher(
-      mergeUint8([KREIVO_EXTENSION_VERSION, call, extensions, implicit]),
+      mergeUint8([KREIVO_EXTENSION_VERSION, call, extensions, implicit])
     );
 
     txExtensions[ix].value = PassAuthenticate.enc(
-      await this.authenticator.authenticate(blockNumber, extrinsicContext),
+      await this.authenticator.authenticate(blockNumber, extrinsicContext)
     );
 
     return txExtensions;
