@@ -33,8 +33,8 @@ export class DummyAuthenticator implements Authenticator<number> {
     public readonly hashedUserId: Uint8Array,
     public deviceId: Uint8Array,
     public getChallenge = (ctx: number, xtc: Uint8Array) =>
-      Promise.resolve(Blake2256(mergeUint8(Blake2256(u32.enc(ctx)), xtc))),
-    public addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
+      Promise.resolve(Blake2256(mergeUint8([Blake2256(u32.enc(ctx)), xtc]))),
+    public addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator,
   ) {}
 
   async authenticate(ctx: number, xtc: Uint8Array): Promise<TPassAuthenticate> {
@@ -47,7 +47,9 @@ export class DummyAuthenticator implements Authenticator<number> {
           hashedUserId: Binary.fromBytes(this.hashedUserId),
           context: ctx,
           signature: Binary.fromBytes(
-            Blake2256(mergeUint8(this.hashedUserId, this.deviceId, challenge))
+            Blake2256(
+              mergeUint8([this.hashedUserId, this.deviceId, challenge]),
+            ),
           ),
         }),
       },

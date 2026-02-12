@@ -5,16 +5,16 @@ import { mergeUint8 } from "polkadot-api/utils";
 
 export type Challenger<T> = (
   ctx: T,
-  xtc: Uint8Array
+  xtc: Uint8Array,
 ) => Promise<Uint8Array> | Uint8Array;
 
 export function blockHashChallenger(
-  client: PolkadotClient
+  client: PolkadotClient,
 ): Challenger<number> {
   return async (ctx: number, xtc: Uint8Array) => {
     const blockHash = Binary.fromHex(
-      await client._request("chain_getBlockHash", [ctx])
+      await client._request("chain_getBlockHash", [ctx]),
     );
-    return Blake2256(mergeUint8(blockHash.asBytes(), xtc));
+    return Blake2256(mergeUint8([blockHash.asBytes(), xtc]));
   };
 }

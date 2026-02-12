@@ -47,7 +47,7 @@ export class DummyAuthenticator implements Authenticator {
         value: dummyCodec.enc({
           hashedUserId: Binary.fromBytes(this.hashedUserId),
           signature: Binary.fromBytes(
-            Blake2256(mergeUint8(this.hashedUserId, this.deviceId, challenge))
+            Blake2256(mergeUint8([this.hashedUserId, this.deviceId, challenge]))
           ),
         }),
       },
