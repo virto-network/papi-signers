@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import { ed25519 } from "@noble/curves/ed25519";
 import { Binary, Blake2256, u32 } from "@polkadot-api/substrate-bindings";
 import { mergeUint8 } from "@polkadot-api/utils";
 import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
@@ -27,7 +28,7 @@ describe("SubstrateKeys", () => {
 
       const challenge = await getChallenge(
         BLOCK_NO,
-        kreivoPassDefaultAddressGenerator(sk.hashedUserId)
+        kreivoPassDefaultAddressGenerator(sk.hashedUserId),
       );
       const signedMessage = SignedMessage.enc({
         context: BLOCK_NO,
@@ -37,7 +38,16 @@ describe("SubstrateKeys", () => {
 
       assert.deepEqual(
         keyRegistration.signature.value.asBytes(),
-        signer.sign(signedMessage)
+        signer.sign(signedMessage),
+      );
+
+      assert.ok(
+        ed25519.verify(
+          keyRegistration.signature.value.asBytes(),
+          signedMessage,
+          signer.publicKey,
+        ),
+        "Signature must be valid",
       );
     });
   });
@@ -65,10 +75,22 @@ describe("SubstrateKeys", () => {
           signature: {
             type: "Ed25519",
             value: Binary.fromBytes(
-              await signer.sign(SignedMessage.enc(message))
+              await signer.sign(SignedMessage.enc(message)),
             ),
           },
-        })
+        }),
+      );
+
+      const decodedCredentials = KeySignature.dec(
+        keySignature!.credentials.value,
+      );
+      assert.ok(
+        ed25519.verify(
+          decodedCredentials.signature.value.asBytes(),
+          SignedMessage.enc(message),
+          signer.publicKey,
+        ),
+        "Signature must be valid",
       );
     });
   });
