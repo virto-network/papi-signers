@@ -30,17 +30,12 @@ export type TMutiSignature =
   | {
       type: "Ecdsa";
       value: FixedSizeBinary<65>;
-    }
-  | {
-      type: "Eth";
-      value: FixedSizeBinary<65>;
     };
 
 export const MultiSignature: Codec<TMutiSignature> = Variant({
   Ed25519: Bin(64),
   Sr25519: Bin(64),
   Ecdsa: Bin(65),
-  Eth: Bin(65),
 });
 
 export const SignedMessage: Codec<TSignedMessage<number>> = Struct({

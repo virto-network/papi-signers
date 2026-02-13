@@ -6,7 +6,7 @@
       "wsUrl": "wss://testnet.kreivo.kippu.rocks",
       "metadata": ".papi/metadata/kreivo.scale",
       "genesis": "0x8f1e2abdcec389498fa752eca7f1d92e12447ecd08c517d2fb53adc1739b9f5f",
-      "codeHash": "0x2a8d247cc2d454827c929c3ce595ed74d314df51b282efadc7573ba492c2b13f"
+      "codeHash": "0xfb0172b457981913907180632f8b14eaaefd70d726bda419e751763b5d803617"
     }
   }
 }

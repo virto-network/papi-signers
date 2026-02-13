@@ -150,7 +150,6 @@ function createWithChopsticks(variant: "default" | "skip" | "todo" | "only") {
           process.env.CHOPSTICKS_ENDPOINT || "wss://rpc.polkadot.io";
         const chain = await setup({
           endpoint,
-          mockSignatureHost: true,
           ...chopsticksOptions,
         });
 
