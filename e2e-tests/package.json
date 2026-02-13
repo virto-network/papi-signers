@@ -5,6 +5,7 @@
   "private": true,
   "description": "E2E testing for Virto Signer",
   "scripts": {
+    "postinstall": "papi",
     "test": "npx tsx --test --test-force-exit tests/**/*.test.ts"
   },
   "dependencies": {
