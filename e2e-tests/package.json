@@ -4,10 +4,19 @@
   "type": "module",
   "private": true,
   "description": "E2E testing for Virto Signer",
+  "scripts": {
+    "test": "npx tsx --test --test-force-exit tests/**/*.test.ts"
+  },
   "dependencies": {
+    "@acala-network/chopsticks-core": "^1.2.7",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-api/json-rpc-provider-proxy": "^0.2.8",
+    "@polkadot-api/substrate-bindings": "^0.17.0",
     "@polkadot-labs/hdkd-helpers": "^0.0.22",
     "@virtonetwork/authenticators-webauthn": "1.1.2",
     "polkadot-api": "^1.16.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3"
   }
 }
