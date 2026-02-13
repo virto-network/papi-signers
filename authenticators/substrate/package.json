@@ -20,7 +20,7 @@
   "browser": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "test": "node --loader ts-node/esm test/test.ts",
+    "test": "tsx test/test.ts",
     "build": "tsc && tsc -p tsconfig.cjs.json && node ../../scripts/fix-cjs.js dist/cjs",
     "prepack": "npm run build"
   },
@@ -38,9 +38,7 @@
     "@polkadot-labs/hdkd": "0.0.26",
     "@virtonetwork/signer": "^1.2.0"
   },
-  "devDependencies": {
-    "ts-node": "^10.9.2"
-  },
+  "devDependencies": {},
   "repository": {
     "url": "https://github.com/virto-network/papi-signers",
     "directory": "authenticators/substrate"
