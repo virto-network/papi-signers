@@ -21,7 +21,7 @@ withChopsticks(
   "SubstrateKey",
   {
     chopsticksOptions: {
-      endpoint: "wss://testnet.kreivo.io",
+      endpoint: "wss://testnet.kreivo.kippu.rocks",
       registeredTypes,
       runtimeLogLevel: 5,
     },
