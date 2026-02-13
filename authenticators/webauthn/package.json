@@ -1,7 +1,7 @@
 {
   "name": "@virtonetwork/authenticators-webauthn",
   "description": "An Authenticator compatible with KreivoPassSigner that uses the WebAuthn standard",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "files": [
     "dist"
@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@simplewebauthn/server": "^13.1.1",
-    "@virtonetwork/signer": "^1.2.0",
+    "@virtonetwork/signer": "^1.2.3",
     "nid-webauthn-emulator": "^0.2.4"
   },
   "devDependencies": {
