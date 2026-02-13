@@ -13,7 +13,6 @@
     "@polkadot-api/json-rpc-provider-proxy": "^0.2.8",
     "@polkadot-api/substrate-bindings": "^0.17.0",
     "@polkadot-labs/hdkd-helpers": "^0.0.22",
-    "@virtonetwork/authenticators-webauthn": "1.1.2",
     "polkadot-api": "^1.16.2"
   },
   "devDependencies": {
