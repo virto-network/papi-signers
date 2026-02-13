@@ -1,10 +1,10 @@
+import { type Blockchain, setStorage } from "@acala-network/chopsticks-core";
 import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
-import { setStorage, type Blockchain } from "@acala-network/chopsticks-core";
 
 export function topupAccount(
   chain: Blockchain,
   address: string | Uint8Array,
-  amount: bigint,
+  amount: bigint
 ) {
   return setStorage(chain, {
     System: {

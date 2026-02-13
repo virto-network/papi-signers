@@ -37,7 +37,7 @@ export class SubstrateKey implements Authenticator<number> {
     public readonly userId: string,
     private signer: SubstrateSigner,
     public readonly getChallenge: Challenger<number>,
-    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator,
+    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
   ) {}
 
   /**
@@ -53,14 +53,14 @@ export class SubstrateKey implements Authenticator<number> {
 
   private static async getHashedUserId(userId: string) {
     return new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId)),
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId))
     );
   }
 
   async register(context: number): Promise<TKeyRegistration<number>> {
     const challenge = await this.getChallenge(
       context,
-      this.addressGenerator(this.hashedUserId),
+      this.addressGenerator(this.hashedUserId)
     );
     const message = SignedMessage.enc({
       context,
@@ -90,7 +90,7 @@ export class SubstrateKey implements Authenticator<number> {
    */
   async authenticate(
     context: number,
-    xtc: Uint8Array,
+    xtc: Uint8Array
   ): Promise<TPassAuthenticate> {
     const challenge = await this.getChallenge(context, xtc);
     const message: TSignedMessage<number> = {
@@ -108,7 +108,7 @@ export class SubstrateKey implements Authenticator<number> {
           signature: {
             type: this.signer.signingType,
             value: Binary.fromBytes(
-              await this.signer.sign(SignedMessage.enc(message)),
+              await this.signer.sign(SignedMessage.enc(message))
             ),
           },
         }),

@@ -1,10 +1,10 @@
+import { ed25519CreateDerive, sr25519CreateDerive } from "@polkadot-labs/hdkd";
 import {
   DEV_PHRASE,
   entropyToMiniSecret,
   generateMnemonic,
   mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
-import { ed25519CreateDerive, sr25519CreateDerive } from "@polkadot-labs/hdkd";
 
 import type { SubstrateSigner } from "@virtonetwork/authenticators-substrate";
 import { getPolkadotSigner } from "polkadot-api/signer";
@@ -17,7 +17,7 @@ import { getPolkadotSigner } from "polkadot-api/signer";
  */
 export function createEd25519Signer(): SubstrateSigner {
   const miniSecret = entropyToMiniSecret(
-    mnemonicToEntropy(generateMnemonic(256)),
+    mnemonicToEntropy(generateMnemonic(256))
   );
   const derive = ed25519CreateDerive(miniSecret);
 

@@ -1,4 +1,8 @@
+import assert from "node:assert";
+import { describe, it } from "node:test";
 import { Blake2256, compactNumber } from "@polkadot-api/substrate-bindings";
+import esmock from "esmock";
+import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
 import {
   EXTRINSIC_FORMAT_GENERAL,
   EXTRINSIC_V5,
@@ -6,12 +10,7 @@ import {
   PassAuthenticate,
   UncheckedExtrinsic,
 } from "../src/types.ts";
-import { describe, it } from "node:test";
-import { fromHex, mergeUint8, toHex } from "polkadot-api/utils";
-
 import { DummyAuthenticator } from "./dummy-authenticator.ts";
-import assert from "node:assert";
-import esmock from "esmock";
 
 describe("KreivoPassSigner", async () => {
   const { KreivoPassSigner } = await esmock<typeof import("../src/signer.ts")>(
@@ -28,17 +27,17 @@ describe("KreivoPassSigner", async () => {
           };
         },
       },
-    },
+    }
   );
 
   it("returning the public key works", () => {
     const authenticator = new DummyAuthenticator(
       new Uint8Array(32).fill(1),
-      new Uint8Array(32),
+      new Uint8Array(32)
     );
     const signer = new KreivoPassSigner(authenticator);
     const addressFromHashedUserId = Blake2256(
-      mergeUint8([new Uint8Array(32).fill(0), authenticator.hashedUserId]),
+      mergeUint8([new Uint8Array(32).fill(0), authenticator.hashedUserId])
     );
 
     assert.equal(toHex(signer.publicKey), toHex(addressFromHashedUserId));
@@ -47,14 +46,14 @@ describe("KreivoPassSigner", async () => {
   it("constructing the extrinsic works", async () => {
     const authenticator = new DummyAuthenticator(
       new Uint8Array(32).fill(1),
-      new Uint8Array(32),
+      new Uint8Array(32)
     );
     const signer = new KreivoPassSigner(authenticator);
 
     const blockNumber = 0;
     const call = fromHex("0x0123456789ab");
     const extrinsicContext = Blake2256(
-      mergeUint8([KREIVO_EXTENSION_VERSION, call]),
+      mergeUint8([KREIVO_EXTENSION_VERSION, call])
     );
 
     const signedTransaction = await signer.signTx(
@@ -67,7 +66,7 @@ describe("KreivoPassSigner", async () => {
         },
       },
       fromHex("0x00"), // We're still mocking the metadata,
-      blockNumber,
+      blockNumber
     );
 
     const craftedSignedTransaction = UncheckedExtrinsic.enc({
@@ -75,7 +74,7 @@ describe("KreivoPassSigner", async () => {
       prelude: {
         extensionVersion: 0,
         extensions: PassAuthenticate.enc(
-          await authenticator.authenticate(blockNumber - 1, extrinsicContext),
+          await authenticator.authenticate(blockNumber - 1, extrinsicContext)
         ),
       },
       call,
@@ -87,8 +86,8 @@ describe("KreivoPassSigner", async () => {
         mergeUint8([
           compactNumber.enc(craftedSignedTransaction.length),
           craftedSignedTransaction,
-        ]),
-      ),
+        ])
+      )
     );
   });
 });

@@ -1,18 +1,18 @@
 import {
-  describe,
-  before,
   after,
+  before,
+  describe,
   type SuiteContext,
   type TestOptions,
 } from "node:test";
-import { createClient, type PolkadotClient } from "polkadot-api";
 import {
-  setup,
   type Blockchain,
   ChopsticksProvider,
   type SetupOptions,
+  setup,
 } from "@acala-network/chopsticks-core";
 import { getSyncProvider } from "@polkadot-api/json-rpc-provider-proxy";
+import { createClient, type PolkadotClient } from "polkadot-api";
 
 export type ChopsticksContext = SuiteContext & {
   client: PolkadotClient;
@@ -50,9 +50,9 @@ const getChopsticksProvider = (chain: Blockchain) => {
                       subscription,
                       result,
                     },
-                  }),
+                  })
                 );
-              },
+              }
             );
 
             onMessage(
@@ -60,7 +60,7 @@ const getChopsticksProvider = (chain: Blockchain) => {
                 jsonrpc: "2.0",
                 id: parsed.id,
                 result: subscription,
-              }),
+              })
             );
             return;
           } else if (parsed.method === "chainHead_v1_unfollow") {
@@ -69,7 +69,7 @@ const getChopsticksProvider = (chain: Blockchain) => {
               await chopProvider.unsubscribe(
                 "chainHead_v1_followEvent",
                 "chainHead_v1_follow",
-                subId,
+                subId
               );
             } catch (error) {
               console.error("Error unsubscribing", error);
@@ -79,14 +79,14 @@ const getChopsticksProvider = (chain: Blockchain) => {
           try {
             const response = await chopProvider.send(
               parsed.method,
-              parsed.params,
+              parsed.params
             );
             onMessage(
               JSON.stringify({
                 jsonrpc: "2.0",
                 id: parsed.id,
                 result: response,
-              }),
+              })
             );
           } catch (error: unknown) {
             console.error("Chopsticks send error", error);
@@ -100,7 +100,7 @@ const getChopsticksProvider = (chain: Blockchain) => {
                   code: -32603,
                   message,
                 },
-              }),
+              })
             );
           }
         },
@@ -118,7 +118,7 @@ function createWithChopsticks(variant: "default" | "skip" | "todo" | "only") {
   return (
     arg1?: string | ChopsticksTestOptions | ChopsticksFn,
     arg2?: ChopsticksTestOptions | ChopsticksFn,
-    arg3?: ChopsticksFn,
+    arg3?: ChopsticksFn
   ) => {
     let name: string | undefined;
     let options: ChopsticksTestOptions = {};

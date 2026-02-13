@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
+import { type CBORType, encodeCBOR } from "@levischuck/tiny-cbor";
 import { Blake2256, u32 } from "@polkadot-api/substrate-bindings";
 import { mergeUint8 } from "@polkadot-api/utils";
-import { encodeCBOR } from "@levischuck/tiny-cbor";
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -62,40 +62,40 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      new TestAuthenticatiorOptions(),
+      new TestAuthenticatiorOptions()
     ).setup();
     const attestation = await wa.register(BLOCK_NO);
 
     // Ensure meta
     assert.deepEqual(
       attestation.meta.authority_id.asBytes(),
-      KREIVO_AUTHORITY_ID.asBytes(),
+      KREIVO_AUTHORITY_ID.asBytes()
     );
     assert.deepEqual(
       attestation.meta.device_id.asBytes(),
-      TestAuthenticatiorOptions.deviceId(userId),
+      TestAuthenticatiorOptions.deviceId(userId)
     );
     assert.equal(attestation.meta.context, BLOCK_NO);
 
     // Ensure authenticatorData
     const authenticatorData = parseAuthenticatorData(
-      new Uint8Array(attestation.authenticator_data.asBytes()),
+      new Uint8Array(attestation.authenticator_data.asBytes())
     );
 
     assert.deepEqual(
       authenticatorData.rpIdHash,
-      new Uint8Array(createHash("sha256").update("example.com").digest()),
+      new Uint8Array(createHash("sha256").update("example.com").digest())
     );
     assert.deepEqual(
       authenticatorData.credentialID,
-      new Uint8Array(TestAuthenticatiorOptions.credentialIds(userId)[0]),
+      new Uint8Array(TestAuthenticatiorOptions.credentialIds(userId)[0])
     ); // Fix credentialID type mismatch
 
     // Ensure clientData
     const challenge = encodeBase64Url(
       new Uint8Array(
-        await getChallenge(BLOCK_NO, wa.addressGenerator(wa.hashedUserId)),
-      ),
+        await getChallenge(BLOCK_NO, wa.addressGenerator(wa.hashedUserId))
+      )
     );
     assert.deepEqual(JSON.parse(attestation.client_data.asText()), {
       type: "webauthn.create",
@@ -108,24 +108,25 @@ describe("WebAuthn", async () => {
     // Since Virto authenticator returns raw authData, we wrap it in a "none" attestation
     // to satisfy the standard WebAuthn verification procedure.
     const reconstructedAttestationObject = encodeCBOR(
-      new Map<string, any>([
+      new Map<string, Uint8Array | string | Map<string, CBORType>>([
         ["authData", new Uint8Array(attestation.authenticator_data.asBytes())],
         ["fmt", "none"],
         ["attStmt", new Map()],
-      ]),
+      ])
     );
 
+    assert.ok(authenticatorData.credentialID);
     await verifyRegistrationResponse({
       response: {
-        id: encodeBase64Url(authenticatorData.credentialID!),
-        rawId: encodeBase64Url(authenticatorData.credentialID!),
+        id: encodeBase64Url(authenticatorData.credentialID),
+        rawId: encodeBase64Url(authenticatorData.credentialID),
         type: "public-key",
         response: {
           attestationObject: encodeBase64Url(
-            new Uint8Array(reconstructedAttestationObject),
+            new Uint8Array(reconstructedAttestationObject)
           ),
           clientDataJSON: encodeBase64Url(
-            new Uint8Array(attestation.client_data.asBytes()),
+            new Uint8Array(attestation.client_data.asBytes())
           ),
         },
         clientExtensionResults: {},
@@ -142,12 +143,12 @@ describe("WebAuthn", async () => {
     const wa = await new WebAuthn(
       userId,
       getChallenge,
-      new TestAuthenticatiorOptions(),
+      new TestAuthenticatiorOptions()
     ).setup();
     const att = await wa.register(BLOCK_NO);
 
     const attAuthenticatorData = parseAuthenticatorData(
-      new Uint8Array(att.authenticator_data.asBytes()),
+      new Uint8Array(att.authenticator_data.asBytes())
     );
 
     // Generate arbitrary challenge
@@ -158,7 +159,7 @@ describe("WebAuthn", async () => {
     // deviceId should equal Blake2256(credentialId)
     assert.deepEqual(
       passAuthenticate?.deviceId.asBytes(),
-      TestAuthenticatiorOptions.deviceId(userId),
+      TestAuthenticatiorOptions.deviceId(userId)
     );
 
     // This authenticator resolves to PassCredentials::WebAuithn(credentials)
@@ -170,7 +171,7 @@ describe("WebAuthn", async () => {
     // Validate metadata
     assert.deepEqual(
       decodedAssertion.meta.authority_id.asText(),
-      KREIVO_AUTHORITY_ID.asText(),
+      KREIVO_AUTHORITY_ID.asText()
     );
     assert.deepEqual(decodedAssertion.meta.user_id.asBytes(), wa.hashedUserId);
     assert.equal(decodedAssertion.meta.context, BLOCK_NO);
@@ -183,20 +184,22 @@ describe("WebAuthn", async () => {
       crossOrigin: false,
     } as CollectedClientData);
 
+    assert.ok(attAuthenticatorData.credentialID);
+    assert.ok(attAuthenticatorData.credentialPublicKey);
     await verifyAuthenticationResponse({
       response: {
         clientExtensionResults: {},
-        id: encodeBase64Url(attAuthenticatorData.credentialID!),
-        rawId: encodeBase64Url(attAuthenticatorData.credentialID!),
+        id: encodeBase64Url(attAuthenticatorData.credentialID),
+        rawId: encodeBase64Url(attAuthenticatorData.credentialID),
         response: {
           authenticatorData: encodeBase64Url(
-            new Uint8Array(decodedAssertion.authenticator_data.asBytes()),
+            new Uint8Array(decodedAssertion.authenticator_data.asBytes())
           ),
           clientDataJSON: encodeBase64Url(
-            new Uint8Array(decodedAssertion.client_data.asBytes()),
+            new Uint8Array(decodedAssertion.client_data.asBytes())
           ),
           signature: encodeBase64Url(
-            new Uint8Array(decodedAssertion.signature.asBytes()),
+            new Uint8Array(decodedAssertion.signature.asBytes())
           ),
         },
         type: "public-key",
@@ -205,8 +208,8 @@ describe("WebAuthn", async () => {
       expectedOrigin: ORIGIN,
       expectedRPID: "example.com",
       credential: {
-        id: encodeBase64Url(attAuthenticatorData.credentialID!),
-        publicKey: attAuthenticatorData.credentialPublicKey!,
+        id: encodeBase64Url(attAuthenticatorData.credentialID),
+        publicKey: attAuthenticatorData.credentialPublicKey,
         counter: attAuthenticatorData.counter,
       },
     });
