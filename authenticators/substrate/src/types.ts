@@ -8,7 +8,7 @@ import { type Codec, Struct, u32 } from "scale-ts";
 
 export type SubstrateSigner = {
   publicKey: Uint8Array;
-  signingType: "Ed25519" | "Sr25519" | "Ecdsa" | "Eth";
+  signingType: "Ed25519" | "Sr25519" | "Ecdsa";
   sign: (bytes: Uint8Array) => Promise<Uint8Array> | Uint8Array;
 };
 
@@ -40,8 +40,8 @@ export const MultiSignature: Codec<TMutiSignature> = Variant({
 
 export const SignedMessage: Codec<TSignedMessage<number>> = Struct({
   context: u32,
-  challenge: Bin(32),
   authority_id: Bin(32),
+  challenge: Bin(32),
 });
 
 export type TKeyRegistration<Cx> = {
