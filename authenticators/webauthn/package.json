@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@simplewebauthn/server": "^13.1.1",
-    "@virtonetwork/signer": "^1.2.3",
+    "@virtonetwork/signer": "^1.2.4",
     "nid-webauthn-emulator": "^0.2.4"
   },
   "devDependencies": {

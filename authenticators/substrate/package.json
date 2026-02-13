@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@polkadot-labs/hdkd": "0.0.26",
-    "@virtonetwork/signer": "^1.2.3"
+    "@virtonetwork/signer": "^1.2.4"
   },
   "devDependencies": {},
   "repository": {
