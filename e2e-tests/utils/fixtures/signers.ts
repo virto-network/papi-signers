@@ -4,9 +4,9 @@ import {
   generateMnemonic,
   mnemonicToEntropy,
 } from "@polkadot-labs/hdkd-helpers";
+import { ed25519CreateDerive, sr25519CreateDerive } from "@polkadot-labs/hdkd";
 
 import type { SubstrateSigner } from "@virtonetwork/authenticators-substrate";
-import { ed25519CreateDerive } from "@polkadot-labs/hdkd";
 import { getPolkadotSigner } from "polkadot-api/signer";
 
 /**
@@ -33,9 +33,9 @@ export function createEd25519Signer(): SubstrateSigner {
  * Makes a test sr25519 signer.
  * @param prefix SS58 network prefix – 0 = Polkadot, 2 = Kusama, 42 = generic
  */
-export function createTestSr25519Signer(path: string = "//Alice") {
+export function createTestSr25519Signer(path: string) {
   const miniSecret = entropyToMiniSecret(mnemonicToEntropy(DEV_PHRASE));
-  const derive = ed25519CreateDerive(miniSecret);
+  const derive = sr25519CreateDerive(miniSecret);
 
   const keypair = derive(path);
   return getPolkadotSigner(keypair.publicKey, "Sr25519", keypair.sign);

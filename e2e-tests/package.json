@@ -8,7 +8,7 @@
     "test": "npx tsx --test --test-force-exit tests/**/*.test.ts"
   },
   "dependencies": {
-    "@acala-network/chopsticks-core": "^1.2.7",
+    "@acala-network/chopsticks": "^1.2.7",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-api/json-rpc-provider-proxy": "^0.2.8",
     "@polkadot-api/substrate-bindings": "^0.17.0",

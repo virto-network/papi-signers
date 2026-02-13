@@ -1,4 +1,5 @@
-import { Binary, PolkadotClient, TypedApi } from "polkadot-api";
+import type { PolkadotClient, TypedApi } from "polkadot-api";
+import { Binary } from "polkadot-api";
 import { type Kreivo, kreivo } from "@polkadot-api/descriptors";
 import { Vector, u8 } from "@polkadot-api/substrate-bindings";
 import { before, it } from "node:test";
@@ -6,26 +7,30 @@ import {
   createEd25519Signer,
   createTestSr25519Signer,
 } from "../utils/fixtures/signers.ts";
+import { registeredTypes } from "../utils/fixtures/kreivo.ts";
+import { topupAccount } from "../utils/fixtures/topup-account.ts";
 
 import type { Blockchain } from "@acala-network/chopsticks-core";
-import { SubstrateKey } from "../../authenticators/substrate/src/index.ts";
+import { SubstrateKey } from "@virtonetwork/authenticators-substrate";
 import assert from "node:assert";
 import { blockHashChallenger } from "@virtonetwork/signer";
-import { registeredTypes } from "../utils/fixtures/kreivo.ts";
-import { ss58Address } from "@polkadot-labs/hdkd-helpers";
-import { topupAccount } from "../utils/fixtures/topup-account.ts";
+import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { withChopsticks } from "../utils/chopsticks.ts";
 
 withChopsticks(
   "SubstrateKey",
   {
-    chopsticksOptions: { endpoint: "wss://testnet.kreivo.io", registeredTypes },
+    chopsticksOptions: {
+      endpoint: "wss://testnet.kreivo.io",
+      registeredTypes,
+      runtimeLogLevel: 5,
+    },
   },
   async (s) => {
     let chain: Blockchain;
     let client: PolkadotClient;
     let api: TypedApi<Kreivo>;
-    const ALICE = createTestSr25519Signer();
+    const ALICE = createTestSr25519Signer("//Alice");
 
     before(async () => {
       ({ chain, client } = s);
@@ -34,7 +39,7 @@ withChopsticks(
       const balance = 1_000_0000000000n;
       await topupAccount(s.chain, ALICE.publicKey, balance);
       const account = await api.query.System.Account.getValue(
-        ss58Address(ALICE.publicKey),
+        ss58Encode(ALICE.publicKey),
       );
       assert.deepEqual(account.data.free, balance);
     });
@@ -47,7 +52,7 @@ withChopsticks(
         blockHashChallenger(client),
       ).setup();
 
-      const keyRegistration = await sk.register(chain.head.number);
+      const keyRegistration = await sk.register(chain.head.number - 6);
 
       const tx = api.tx.Pass.register({
         user: Binary.fromBytes(sk.hashedUserId),
@@ -55,35 +60,24 @@ withChopsticks(
           type: "SubstrateKey",
           value: {
             message: {
-              authority_id: keyRegistration.message.authority_id,
               context: keyRegistration.message.context,
+              authority_id: keyRegistration.message.authority_id,
               challenge: keyRegistration.message.challenge,
             },
-            public: ss58Address(keyRegistration.public.asHex()),
+            public: ss58Encode(keyRegistration.public.asHex()),
             signature: keyRegistration.signature,
           },
         },
       });
 
-      console.log("BARE TX:", await tx.getBareTx());
-
       const opaque = await tx.sign(ALICE, { mortality: { mortal: false } });
       const extrinsicBytes = Vector(u8).dec(opaque);
 
-      const balance = 1_000_0000000000n;
-      const account = await api.query.System.Account.getValue(
-        ss58Address(ALICE.publicKey),
+      const txRes = await api.apis.BlockBuilder.apply_extrinsic(
+        Binary.fromBytes(new Uint8Array(extrinsicBytes)),
       );
-      assert.deepEqual(account.data.free, balance);
-
-      const txValidity =
-        await api.apis.TaggedTransactionQueue.validate_transaction(
-          { type: "External", value: undefined },
-          Binary.fromBytes(new Uint8Array(extrinsicBytes)),
-          Binary.fromHex(chain.head.hash),
-        );
-
-      assert(txValidity.success);
+      assert(txRes.success);
+      assert(txRes.value.success);
     });
   },
 );

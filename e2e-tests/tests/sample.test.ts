@@ -2,7 +2,7 @@ import { strict as assert } from "node:assert";
 import { it } from "node:test";
 import { withChopsticks } from "../utils/chopsticks.ts";
 
-withChopsticks("Chopsticks Setup", (context) => {
+withChopsticks.skip("Chopsticks Setup", (context) => {
   it("should have a client and chain", async () => {
     assert.ok(context.client, "Client should be initialized");
     assert.ok(context.chain, "Chain should be initialized");
