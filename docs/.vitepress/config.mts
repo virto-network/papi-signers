@@ -3,6 +3,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "Virto Signers",
   description: "Documentation for Virto Signer packages",
+  base: "/papi-signers/",
   themeConfig: {
     nav: [
       { text: "Home", link: "/" },
