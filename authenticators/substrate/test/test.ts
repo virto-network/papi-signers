@@ -71,6 +71,7 @@ describe("SubstrateKeys", () => {
       assert.deepEqual(
         keySignature?.credentials.value,
         KeySignature.enc({
+          user_id: Binary.fromBytes(sk.hashedUserId),
           message,
           signature: {
             type: "Ed25519",

@@ -51,7 +51,7 @@ export class KreivoPassSigner implements PolkadotSigner {
     signedExtensions: Record<string, TransactionExtensionMetadata>,
     encodedMetadata: Uint8Array,
     atBlockNumber: number,
-    hasher = Blake2256
+    hasher = Blake2256,
   ): Promise<Uint8Array> {
     const metadata = unifyMetadata(decAnyMetadata(encodedMetadata));
 
@@ -70,7 +70,7 @@ export class KreivoPassSigner implements PolkadotSigner {
       call,
       txExtensions,
       atBlockNumber - 1,
-      hasher
+      hasher,
     ).then((xts) => xts.map((x) => x.value));
 
     const xt = UncheckedExtrinsic.enc({
@@ -88,10 +88,10 @@ export class KreivoPassSigner implements PolkadotSigner {
     call: Uint8Array,
     txExtensions: TransactionExtensionMetadata[],
     blockNumber: number,
-    hasher = Blake2256
+    hasher = Blake2256,
   ): Promise<TransactionExtensionMetadata[]> {
     const ix = txExtensions.findIndex(
-      (ext) => ext.identifier === "PassAuthenticate"
+      (ext) => ext.identifier === "PassAuthenticate",
     );
     if (ix === -1) {
       throw new Error("PassAuthenticate extension not found in txExtensions");
@@ -106,12 +106,16 @@ export class KreivoPassSigner implements PolkadotSigner {
     const implicit = mergeUint8(following.map((e) => e.additionalSigned));
 
     // From https://github.com/virto-network/frame-contrib/pull/47
-    const extrinsicContext = hasher(
-      mergeUint8([KREIVO_EXTENSION_VERSION, call, extensions, implicit])
-    );
+    const rawContext = mergeUint8([
+      KREIVO_EXTENSION_VERSION,
+      call,
+      extensions,
+      implicit,
+    ]);
+    const extrinsicContext = hasher(rawContext);
 
     txExtensions[ix].value = PassAuthenticate.enc(
-      await this.authenticator.authenticate(blockNumber, extrinsicContext)
+      await this.authenticator.authenticate(blockNumber, extrinsicContext),
     );
 
     return txExtensions;

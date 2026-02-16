@@ -9,7 +9,9 @@ import { Binary } from "polkadot-api";
 import {
   KeyRegistration,
   KeySignature,
-  SignedMessage,
+  EncodedSignedMessage,
+  KeyRegistrationSignedMessage,
+  KeySignatureSignedMessage,
   type SubstrateSigner,
   type TKeyRegistration,
   type TKeySignature,
@@ -22,7 +24,12 @@ export type {
   TKeySignature,
   TSignedMessage,
 };
-export { SignedMessage, KeySignature, KeyRegistration };
+export {
+  KeyRegistrationSignedMessage,
+  KeySignatureSignedMessage,
+  KeySignature,
+  KeyRegistration,
+};
 
 export const KREIVO_AUTHORITY_ID = Binary.fromText("kreivo_p".padEnd(32, "\0"));
 
@@ -37,7 +44,7 @@ export class SubstrateKey implements Authenticator<number> {
     public readonly userId: string,
     private signer: SubstrateSigner,
     public readonly getChallenge: Challenger<number>,
-    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
+    public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator,
   ) {}
 
   /**
@@ -53,27 +60,29 @@ export class SubstrateKey implements Authenticator<number> {
 
   private static async getHashedUserId(userId: string) {
     return new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId))
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(userId)),
     );
   }
 
   async register(context: number): Promise<TKeyRegistration<number>> {
     const challenge = await this.getChallenge(
       context,
-      this.addressGenerator(this.hashedUserId)
+      this.addressGenerator(this.hashedUserId),
     );
-    const message = SignedMessage.enc({
+    const message: TSignedMessage<number> = {
       context,
-      authority_id: KREIVO_AUTHORITY_ID,
       challenge: Binary.fromBytes(challenge),
-    });
+      authority_id: KREIVO_AUTHORITY_ID,
+    };
+    const encodedMessage = EncodedSignedMessage.enc(message);
+    const signature = await this.signer.sign(encodedMessage);
 
     return {
-      message: SignedMessage.dec(message),
+      message,
       public: Binary.fromBytes(this.signer.publicKey),
       signature: {
         type: this.signer.signingType,
-        value: Binary.fromBytes(await this.signer.sign(message)),
+        value: Binary.fromBytes(signature),
       },
     };
   }
@@ -90,7 +99,7 @@ export class SubstrateKey implements Authenticator<number> {
    */
   async authenticate(
     context: number,
-    xtc: Uint8Array
+    xtc: Uint8Array,
   ): Promise<TPassAuthenticate> {
     const challenge = await this.getChallenge(context, xtc);
     const message: TSignedMessage<number> = {
@@ -98,18 +107,19 @@ export class SubstrateKey implements Authenticator<number> {
       authority_id: KREIVO_AUTHORITY_ID,
       challenge: Binary.fromBytes(challenge),
     };
+    const encodedMessage = EncodedSignedMessage.enc(message);
+    const sig = await this.signer.sign(encodedMessage);
 
     return {
       deviceId: Binary.fromBytes(this.signer.publicKey),
       credentials: {
         tag: "SubstrateKey",
         value: KeySignature.enc({
-          message: message,
+          user_id: Binary.fromBytes(this.hashedUserId),
+          message,
           signature: {
             type: this.signer.signingType,
-            value: Binary.fromBytes(
-              await this.signer.sign(SignedMessage.enc(message))
-            ),
+            value: Binary.fromBytes(sig),
           },
         }),
       },
