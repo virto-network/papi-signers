@@ -16,7 +16,7 @@
     "format": "npx @biomejs/biome check --write .",
     "docs:gen": "tsx scripts/generate-docs.ts && typedoc",
     "docs:dev": "npm run docs:gen && vitepress dev docs",
-    "docs:build": "npm run docs:gen && vitepress build docs",
+    "docs:build": "npm run build && npm run docs:gen && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
