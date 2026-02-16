@@ -1,5 +1,11 @@
 # @virtonetwork/signer
 
+## 1.3.1
+
+### Patch Changes
+
+- b401458: Fix: broken links to homepage
+
 ## 1.3.0
 
 ### Minor Changes

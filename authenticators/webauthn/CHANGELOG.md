@@ -1,5 +1,13 @@
 # @virtonetwork/authenticators-webauthn
 
+## 1.2.5
+
+### Patch Changes
+
+- b401458: Fix: broken links to homepage
+- Updated dependencies [b401458]
+  - @virtonetwork/signer@1.3.1
+
 ## 1.2.4
 
 ### Patch Changes
