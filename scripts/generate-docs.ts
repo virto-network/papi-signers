@@ -49,7 +49,7 @@ async function extractRegions(filePath: string): Promise<Region[]> {
     if (minIndent === Infinity) minIndent = 0;
 
     const dedentedLines = lines.map((line) =>
-      line.length >= minIndent ? line.slice(minIndent) : line,
+      line.length >= minIndent ? line.slice(minIndent) : line
     );
 
     return { name, content: dedentedLines };
@@ -62,7 +62,7 @@ async function getFiles(dir: string): Promise<string[]> {
     dirents.map((dirent) => {
       const res = path.resolve(dir, dirent.name);
       return dirent.isDirectory() ? getFiles(res) : res;
-    }),
+    })
   );
   return Array.prototype.concat(...files);
 }

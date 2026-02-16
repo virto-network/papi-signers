@@ -6,9 +6,7 @@
     "signer/src/index.ts"
   ],
   "out": "docs/api",
-  "plugin": [
-    "typedoc-plugin-markdown"
-  ],
+  "plugin": ["typedoc-plugin-markdown"],
   "name": "Virto Signer API",
   "readme": "none",
   "gitRevision": "main",
