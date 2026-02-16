@@ -15,7 +15,7 @@ export default defineConfig({
       {
         text: "Guide",
         items: [
-          { text: "Substrate Authenticator", link: "/guide/examples" },
+          { text: "Substrate Authenticator", link: "/guide/substrate" },
           { text: "WebAuthn Authenticator", link: "/guide/webauthn" },
           { text: "Kreivo Signer", link: "/guide/signer" },
         ],
@@ -23,13 +23,15 @@ export default defineConfig({
       {
         text: "API Reference",
         items: [
-          { text: "Modules", link: "/api/README" },
           {
             text: "Substrate Authenticator",
-            link: "/api/classes/Substrate",
+            link: "/api/authenticators/substrate",
           },
-          { text: "WebAuthn Authenticator", link: "/api/classes/WebAuthn" },
-          { text: "Kreivo Signer", link: "/api/classes/KreivoPassSigner" },
+          {
+            text: "WebAuthn Authenticator",
+            link: "/api/authenticators/webauthn",
+          },
+          { text: "Kreivo Signer", link: "/api/signer" },
         ],
       },
     ],
