@@ -26,7 +26,7 @@ export default defineConfig({
           { text: "Modules", link: "/api/README" },
           {
             text: "Substrate Authenticator",
-            link: "/api/classes/SubstrateKey",
+            link: "/api/classes/Substrate",
           },
           { text: "WebAuthn Authenticator", link: "/api/classes/WebAuthn" },
           { text: "Kreivo Signer", link: "/api/classes/KreivoPassSigner" },
