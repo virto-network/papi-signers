@@ -1,13 +1,14 @@
+import { KreivoPassSigner, blockHashChallenger } from "@virtonetwork/signer";
+
+import { WebAuthn as PasskeysAuthenticator } from "@virtonetwork/authenticators-webauthn";
+import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import test from "node:test";
 
-import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
-import { WebAuthn as PasskeysAuthenticator } from "@virtonetwork/authenticators-webauthn";
-import { KreivoPassSigner } from "@virtonetwork/signer";
-
 test("registration works", async () => {
+  // #docregion webauthn/setup
   const passkeysAuthenticator = await new PasskeysAuthenticator(
     "user@example.org",
-    blockHashChallenge.bind(this)
+    blockHashChallenge.bind(this),
   ).setup();
 
   const passSigner = new KreivoPassSigner(passkeysAuthenticator);
@@ -17,8 +18,9 @@ test("registration works", async () => {
   const client = await this.getClient();
   const finalizedBlock = await client.getFinalizedBlock();
   const _attestation = await passkeysAuthenticator.register(
-    finalizedBlock.number
+    finalizedBlock.number,
   );
+  // #enddocregion webauthn/setup
 });
 
 //     const kreivoApi = (await this.getClient()).getTypedApi(kreivo);

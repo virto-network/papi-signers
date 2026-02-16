@@ -1,0 +1,18 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "authenticators/substrate/src/index.ts",
+    "authenticators/webauthn/src/index.ts",
+    "signer/src/index.ts"
+  ],
+  "out": "docs/api",
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
+  "name": "Virto Signer API",
+  "readme": "none",
+  "gitRevision": "main",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "hideGenerator": true
+}

@@ -57,6 +57,7 @@ withChopsticks(
     });
 
     it("should be able to register an account, signing with a Substrate Key as device", async () => {
+      // #docregion substrate/register
       const keyRegistration = await sk.register(chain.head.number - 6);
 
       const tx = api.tx.Pass.register({
@@ -87,21 +88,24 @@ withChopsticks(
                 event.events,
               );
               try {
+                // #enddocregion substrate/register
                 assert(created);
                 assert.equal(created.account, newAccount);
+                // #docregion substrate/register
                 return resolve();
               } catch (e) {
-                console.error(e);
-                return error(e);
-              }
+                (error as any)(e);
+              } // Simplified error handling for doc
             }
           },
           error,
         });
       });
+      // #enddocregion substrate/register
     });
 
     it("should be able to sign transactions with the registered signer", async () => {
+      // #docregion substrate/authenticate
       const kreivoPassSigner = new KreivoPassSigner(sk);
       const accountId = ss58Encode(kreivoPassSigner.publicKey, 2);
 
@@ -139,6 +143,7 @@ withChopsticks(
         const txResult = await api.apis.BlockBuilder.apply_extrinsic(
           Binary.fromBytes(new Uint8Array(txBytes)),
         );
+        // #enddocregion substrate/authenticate
 
         assert(txResult.success);
         assert(txResult.value.success);
