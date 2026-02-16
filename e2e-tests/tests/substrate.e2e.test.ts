@@ -4,6 +4,7 @@ import { before, it } from "node:test";
 import { overrideWasm } from "@acala-network/chopsticks/utils/override";
 import type { Blockchain } from "@acala-network/chopsticks-core";
 import { type Kreivo, kreivo } from "@polkadot-api/descriptors";
+import { u8, Vector } from "@polkadot-api/substrate-bindings";
 import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { SubstrateKey } from "@virtonetwork/authenticators-substrate";
 import { blockHashChallenger, KreivoPassSigner } from "@virtonetwork/signer";
@@ -16,7 +17,6 @@ import {
   createTestSr25519Signer,
 } from "../utils/fixtures/signers.ts";
 import { topupAccount } from "../utils/fixtures/topup-account.ts";
-import { u8, Vector } from "@polkadot-api/substrate-bindings";
 
 withChopsticks(
   "SubstrateKey",
@@ -45,14 +45,14 @@ withChopsticks(
       const balance = 1_000_0000000000n;
       await topupAccount(suite.chain, ALICE.publicKey, balance);
       const account = await api.query.System.Account.getValue(
-        ss58Encode(ALICE.publicKey),
+        ss58Encode(ALICE.publicKey)
       );
       assert.deepEqual(account.data.free, balance);
 
       sk = await new SubstrateKey(
         USERNAME,
         SIGNER,
-        blockHashChallenger(client),
+        blockHashChallenger(client)
       ).setup();
     });
 
@@ -82,10 +82,10 @@ withChopsticks(
             if (event.type === "finalized") {
               const newAccount = ss58Encode(
                 sk.addressGenerator(sk.hashedUserId),
-                2,
+                2
               );
               const [created] = api.event.System.NewAccount.filter(
-                event.events,
+                event.events
               );
               try {
                 // #enddocregion substrate/register
@@ -94,7 +94,7 @@ withChopsticks(
                 // #docregion substrate/register
                 return resolve();
               } catch (e) {
-                (error as any)(e);
+                error(e);
               } // Simplified error handling for doc
             }
           },
@@ -125,7 +125,7 @@ withChopsticks(
               }
             },
             error,
-          }),
+          })
         );
       }
 
@@ -141,7 +141,7 @@ withChopsticks(
         const txBytes = Vector(u8).dec(signedTx);
 
         const txResult = await api.apis.BlockBuilder.apply_extrinsic(
-          Binary.fromBytes(new Uint8Array(txBytes)),
+          Binary.fromBytes(new Uint8Array(txBytes))
         );
         // #enddocregion substrate/authenticate
 
@@ -149,5 +149,5 @@ withChopsticks(
         assert(txResult.value.success);
       }
     });
-  },
+  }
 );

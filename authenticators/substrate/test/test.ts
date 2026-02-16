@@ -6,8 +6,8 @@ import { mergeUint8 } from "@polkadot-api/utils";
 import { kreivoPassDefaultAddressGenerator } from "@virtonetwork/signer";
 import { KREIVO_AUTHORITY_ID, SubstrateKey } from "../src/index.ts";
 import {
-  KeySignature,
   EncodedSignedMessage,
+  KeySignature,
   type TSignedMessage,
 } from "../src/types.ts";
 import { createEd25519Signer } from "./fixtures/ed25519.signer.ts";
@@ -28,7 +28,7 @@ describe("SubstrateKeys", () => {
 
       const challenge = await getChallenge(
         BLOCK_NO,
-        kreivoPassDefaultAddressGenerator(sk.hashedUserId),
+        kreivoPassDefaultAddressGenerator(sk.hashedUserId)
       );
       const signedMessage = EncodedSignedMessage.enc({
         context: BLOCK_NO,
@@ -38,16 +38,16 @@ describe("SubstrateKeys", () => {
 
       assert.deepEqual(
         keyRegistration.signature.value.asBytes(),
-        signer.sign(signedMessage),
+        signer.sign(signedMessage)
       );
 
       assert.ok(
         ed25519.verify(
           keyRegistration.signature.value.asBytes(),
           signedMessage,
-          signer.publicKey,
+          signer.publicKey
         ),
-        "Signature must be valid",
+        "Signature must be valid"
       );
     });
   });
@@ -76,23 +76,23 @@ describe("SubstrateKeys", () => {
           signature: {
             type: "Ed25519",
             value: Binary.fromBytes(
-              await signer.sign(EncodedSignedMessage.enc(message)),
+              await signer.sign(EncodedSignedMessage.enc(message))
             ),
           },
-        }),
+        })
       );
 
       assert.ok(keySignature);
       const decodedCredentials = KeySignature.dec(
-        keySignature.credentials.value,
+        keySignature.credentials.value
       );
       assert.ok(
         ed25519.verify(
           decodedCredentials.signature.value.asBytes(),
           EncodedSignedMessage.enc(message),
-          signer.publicKey,
+          signer.publicKey
         ),
-        "Signature must be valid",
+        "Signature must be valid"
       );
     });
   });

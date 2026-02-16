@@ -5,3 +5,4 @@ node_modules
 docs/api
 docs/guide/snippets
 docs/.vitepress/dist
+docs/.vitepress/.temp
