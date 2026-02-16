@@ -25,13 +25,13 @@ export default defineConfig({
         items: [
           {
             text: "Substrate Authenticator",
-            link: "/api/authenticators/substrate/src",
+            link: "/api/authenticators/substrate/src/README",
           },
           {
             text: "WebAuthn Authenticator",
-            link: "/api/authenticators/webauthn/src",
+            link: "/api/authenticators/webauthn/src/README",
           },
-          { text: "Kreivo Signer", link: "/api/signer/src" },
+          { text: "Kreivo Signer", link: "/api/signer/src/README" },
         ],
       },
     ],

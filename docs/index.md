@@ -8,10 +8,10 @@ hero:
   actions:
     - theme: brand
       text: Usage Guide
-      link: /guide/examples
+      link: /guide/substrate
     - theme: alt
       text: API Reference
-      link: /api/modules
+      link: /api/README
 
 features:
   - title: Modular Authenticators
