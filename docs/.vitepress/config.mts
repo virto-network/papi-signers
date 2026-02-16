@@ -8,7 +8,7 @@ export default defineConfig({
     nav: [
       { text: "Home", link: "/" },
       { text: "Guide", link: "/guide/examples" },
-      { text: "API", link: "/api/modules" },
+      { text: "API", link: "/api/README" },
     ],
 
     sidebar: [
@@ -23,7 +23,7 @@ export default defineConfig({
       {
         text: "API Reference",
         items: [
-          { text: "Modules", link: "/api/modules" },
+          { text: "Modules", link: "/api/README" },
           {
             text: "Substrate Authenticator",
             link: "/api/classes/SubstrateKey",
