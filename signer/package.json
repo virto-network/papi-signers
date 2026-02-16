@@ -1,6 +1,7 @@
 {
   "name": "@virtonetwork/signer",
   "description": "A signer for constructing a signed extrinsic using Pass-provided authenticators",
+  "homepage": "https://virtonetwork.github.io/papi-signers/guide/signer",
   "version": "1.2.4",
   "type": "module",
   "files": [

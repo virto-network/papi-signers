@@ -1,4 +1,6 @@
-# WebAuthn Authenticator for Virto Network
+# WebAuthn Authenticator
+
+[**📚 Documentation**](https://virtonetwork.github.io/papi-signers/guide/webauthn)
 
 A TypeScript helper that wires **passkeys** (WebAuthn resident credentials) to the [@virtonetwork/signer](https://github.com/virto-network/papi-signers) stack. It exposes a single class, `WebAuthn`, that fulfils the `Authenticator<number>` interface used by `PassSigner`.
 The implementation is **browser‑only** and keeps all credential mapping in the caller’s hands — perfect for SPAs or wallet extensions that already manage users.

@@ -1,5 +1,6 @@
 {
   "name": "virto-papi-signers",
+  "homepage": "https://virtonetwork.github.io/papi-signers/",
   "private": "true",
   "workspaces": [
     "e2e-tests",

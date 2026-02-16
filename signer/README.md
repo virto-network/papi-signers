@@ -1,5 +1,7 @@
 # Virto Signer
 
+[**📚 Documentation**](https://virtonetwork.github.io/papi-signers/guide/signer)
+
 An implementation of [Polkadot API](https://github.com/polkadot-api/polkadot-api)'s `PolkadotSigner`, that constructs a signed extrinsic which
 uses an implementation of `Authenticator` to retrieve the required `deviceId` and `credentials`.
 

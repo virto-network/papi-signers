@@ -1,5 +1,9 @@
 # Polkadot-API Signers and Authenticators
 
+# Virto Signer
+
+[**📚 Documentation**](https://virtonetwork.github.io/papi-signers/)
+
 This repository contains the `virto-signer` library which implements the `PolkadotSigner` type, as well
 as some authenticators that are implemented in Kreivo.
 

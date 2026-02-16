@@ -1,6 +1,7 @@
 {
   "name": "@virtonetwork/authenticators-substrate",
   "description": "An Authenticator compatible with KreivoPassSigner that uses substrate-style signatures",
+  "homepage": "https://virtonetwork.github.io/papi-signers/guide/examples",
   "version": "1.1.4",
   "type": "module",
   "files": [
