@@ -1,6 +1,6 @@
 ---
-"@virtonetwork/signer": "patch",
-"@virtonetwork/authenticators-substrate": "patch",
+"@virtonetwork/signer": "patch"
+"@virtonetwork/authenticators-substrate": "patch"
 "@virtonetwork/authenticators-webauthn": "patch"
 ---
 
