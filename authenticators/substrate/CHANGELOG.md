@@ -1,5 +1,13 @@
 # @virtonetwork/authenticators-substrate
 
+## 1.2.2
+
+### Patch Changes
+
+- b401458: Fix: broken links to homepage
+- Updated dependencies [b401458]
+  - @virtonetwork/signer@1.3.1
+
 ## 1.2.0
 
 ### Minor Changes
