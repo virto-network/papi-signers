@@ -109,19 +109,15 @@ withChopsticks(
               try {
                 assert(created);
                 assert.equal(created.account, newAccount);
-                // #docregion substrate/register
                 return resolve();
-                // #enddocregion substrate/register
               } catch (e) {
                 return error(e);
               }
             }
-            // #docregion substrate/register
           },
           error,
         });
       });
-      // #enddocregion substrate/register
     });
 
     it("should be able to sign transactions with the registered signer", async () => {
@@ -156,13 +152,15 @@ withChopsticks(
         // #docregion substrate/authenticate
         const remark = Binary.fromText("Hello, Kreivo!");
         const tx = api.tx.System.remark_with_event({ remark });
+        
+        // const txHash = await tx.signAndSubmit(kreivoPassSigner); // #uncomment
+        // #enddocregion substrate/authenticate
 
         const signedTx = await tx.sign(kreivoPassSigner, {
           mortality: { mortal: false },
         });
-        // #enddocregion substrate/authenticate
-        const txBytes = Vector(u8).dec(signedTx);
 
+        const txBytes = Vector(u8).dec(signedTx);
         const txResult = await api.apis.BlockBuilder.apply_extrinsic(
           Binary.fromBytes(new Uint8Array(txBytes)),
         );

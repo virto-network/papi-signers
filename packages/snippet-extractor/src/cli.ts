@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-import { loadConfig } from "./config.js";
-import { extractSnippetsFromFile, combineBlocks } from "./extract.js";
-import { formatSnippet } from "./format.js";
+
+import { combineBlocks, extractSnippets } from "./extract.js";
+
 import fg from "fast-glob";
-import path from "node:path";
+import { formatSnippet } from "./format.js";
 import fs from "node:fs/promises";
+import { loadConfig } from "./config.js";
+import path from "node:path";
 
 async function main() {
   try {
@@ -22,29 +24,24 @@ async function main() {
 
     let count = 0;
     for (const file of files) {
-      const regions = await extractSnippetsFromFile(file);
-
+      const content = await fs.readFile(file, "utf-8");
+      const regions = extractSnippets(content);
+      
       for (const region of regions) {
         const rawContent = combineBlocks(region.blocks);
-        // Assuming TS for now, but could be inferred or configured
-        const formattedContent = await formatSnippet(
-          rawContent,
-          "snippet.ts",
-          config.prettierOptions,
-        );
-
+        const formattedContent = await formatSnippet(rawContent, "snippet.ts", config.prettierOptions);
+        
         const outputPath = path.join(config.outputDir, `${region.name}.ts`);
         const outputDir = path.dirname(outputPath);
         await fs.mkdir(outputDir, { recursive: true });
-
+        
         await fs.writeFile(outputPath, formattedContent);
         console.log(`Extracted: ${region.name} -> ${outputPath}`);
         count++;
       }
     }
-    console.log(
-      `\nSuccessfully extracted ${count} snippets to ${config.outputDir}`,
-    );
+    console.log(`\nSuccessfully extracted ${count} snippets to ${config.outputDir}`);
+
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);
