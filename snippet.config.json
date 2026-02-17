@@ -5,6 +5,7 @@
     "authenticators/**/test/**/*.ts"
   ],
   "exclude": [
+    "docs/**",
     "**/node_modules/**",
     "**/dist/**"
   ],

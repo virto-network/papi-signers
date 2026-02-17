@@ -9,6 +9,10 @@ import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 // #docregion substrate/setup
 import { SubstrateKey } from "@virtonetwork/authenticators-substrate";
 import { blockHashChallenger, KreivoPassSigner } from "@virtonetwork/signer";
+// #uncomment
+// import { createClient } from "polkadot-api";
+// import { getWsProvider } from "polkadot-api/ws-provider";
+// #enduncomment
 // #enddocregion substrate/setup
 import type { PolkadotClient, TypedApi } from "polkadot-api";
 import { Binary } from "polkadot-api";
@@ -54,7 +58,13 @@ withChopsticks(
       assert.deepEqual(account.data.free, balance);
 
       // #docregion substrate/setup
-      sk = await new SubstrateKey(
+      // #uncomment
+      // const client = createClient(
+      //   getWssProvider("wss://kreivo.io")
+      // );
+      // const sk = await new SubstrateKey(
+      // #enduncomment
+      sk = await new SubstrateKey( // #remove
         USERNAME,
         SIGNER,
         blockHashChallenger(client),
@@ -82,10 +92,12 @@ withChopsticks(
         },
       });
 
+      // const txHash = await tx.signAndSubmit(SERVICE); // #uncomment
+      // #enddocregion substrate/register
+
       await new Promise<void>((resolve, error) => {
         tx.signSubmitAndWatch(ALICE).subscribe({
           next: (event) => {
-            // #enddocregion substrate/register
             if (event.type === "finalized") {
               const newAccount = ss58Encode(
                 sk.addressGenerator(sk.hashedUserId),
