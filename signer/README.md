@@ -8,82 +8,18 @@ uses an implementation of `Authenticator` to retrieve the required `deviceId` an
 ## Usage
 
 ```ts
-import {
-  Authenticator,
-  HashedUserId,
-  TPassAuthenticate,
-} from "@virtonetwork/signer";
-import {
-  Bin,
-  Binary,
-  Blake2256,
-  FixedSizeBinary,
-} from "@polkadot-api/substrate-bindings";
-import { Codec, Struct } from "scale-ts";
+import { KreivoPassSigner } from "@virtonetwork/signer";
+import { Binary } from "polkadot-api";
 
-import { mergeUint8 } from "polkadot-api/utils";
+// Assuming you have an initialized authenticator (e.g. SubstrateKey or WebAuthn)
+const kreivoPassSigner = new KreivoPassSigner(authenticator);
 
-export type Dummy = {
-  hashedUserId: HashedUserId;
-  signature: FixedSizeBinary<32>;
-};
-export const dummyCodec: Codec<Dummy> = Struct({
-  hashedUserId: Bin(32),
-  signature: Bin(32),
-});
+// You can get the address of the signer
+const accountId = kreivoPassSigner.address;
 
-export class DummyAuthenticator implements Authenticator {
-  readonly deviceId: Uint8Array;
-  readonly hashedUserId: Uint8Array;
+// Sign transactions
+const remark = Binary.fromText('Hello, Kreivo!');
+const tx = api.tx.System.remark_with_event({ remark });
 
-  constructor(deviceId: Uint8Array, hashedUserId: Uint8Array) {
-    this.deviceId = deviceId;
-    this.hashedUserId = hashedUserId;
-  }
-
-  async authenticate(challenge: Uint8Array): Promise<TPassAuthenticate> {
-    return {
-      deviceId: Binary.fromBytes(this.deviceId),
-      credentials: {
-        tag: "WebAuthn",
-        value: dummyCodec.enc({
-          hashedUserId: Binary.fromBytes(this.hashedUserId),
-          signature: Binary.fromBytes(
-            Blake2256(mergeUint8([this.hashedUserId, this.deviceId, challenge]))
-          ),
-        }),
-      },
-    };
-  }
-}
-```
-
-Then, when signing a transaction, use the authenticator:
-
-```ts
-import { Binary, createClient } from "polkadot-api";
-import { kreivo } from "@polkadot-api/descriptors";
-import { getWsProvider } from "polkadot-api/ws-provider/web";
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
-
-import { VirtoSigner } from '@virtonetwork/signer';
-
-const client = createClient(
-  withPolkadotSdkCompat(getWsProvider("wss://kreivo.io"))
-);
-const api = client.getTypedApi(kreivo);
-const authenticator = new DummyAuthenticator(
-  new Uint8Array(32),
-  new Uint8Array(32).fill(1)
-);
-const signer = new KreivoPassSigner(
-  authenticator, 
-  kreivoApi.query.System.BlockHash.getValue
-);
-
-const tx = kreivoApi.tx.System.remark({
-  remark: Binary.fromText("Hello, world!"),
-});
-
-await tx.signAndSubmit(signer);
+const txHash = await tx.signAndSubmit(kreivoPassSigner);
 ```

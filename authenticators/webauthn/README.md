@@ -19,28 +19,93 @@ The implementation is **browser‑only** and keeps all credential mapping in the
 npm i @virtonetwork/authenticators-webauthn
 ```
 
-## 🚀 Quick start
+## Setup
+
+First, initialize the `WebAuthn` authenticator with the user's identifier and a challenger.
 
 ```ts
-import { WebAuthn } from "@virtonetwork/authenticators-webauthn";
-import { PassSigner } from "@virtonetwork/signer";
+wa = await new WebAuthn(USERNAME, blockHashChallenger(client)).setup();
+```
 
-// 1️⃣  Restore user → credential mapping (from DB, localStorage…)
-const savedId = await db.getCredentialId("alice@example.com");
+## Registration
 
-// 2️⃣  Bootstrap helper
-const wa = await new WebAuthn("alice@example.com", savedId).setup();
+To register a new credential, call the `register` method. This will trigger the browser's WebAuthn prompt.
+The returned attestation must be submitted to the chain using the `Pass.register` extrinsic.
 
-// 3️⃣  Enrol a new pass‑key if needed
-if (!savedId) {
-  const att = await wa.register(blockNumber, blockHash);
-  await db.saveCredentialId("alice@example.com", att.credentialId);
+```ts
+const finalizedBlock = await client.getFinalizedBlock();
+const attestation = await wa.register(finalizedBlock.number);
+
+const tx = api.tx.Pass.register({
+  user: Binary.fromBytes(wa.hashedUserId),
+  attestation: {
+    type: 'WebAuthn',
+    value: {
+      meta: attestation.meta,
+      authenticator_data: attestation.authenticator_data,
+      client_data: attestation.client_data,
+      public_key: attestation.public_key,
+    },
+  },
+});
+
+await new Promise<void>((resolve, error) => {
+  tx.signSubmitAndWatch(ALICE).subscribe({
+    next: (event) => {
+      if (event.type === 'finalized') {
+        resolve();
+      }
+    },
+    error,
+  });
+});
+```
+
+## Authentication
+
+Once registered, you can use the `WebAuthn` instance to create a `KreivoPassSigner`.
+This signer can then be used to sign transactions, which will trigger the browser's WebAuthn prompt for authentication.
+
+```ts
+const kreivoPassSigner = new KreivoPassSigner(wa);
+const accountId = ss58Encode(kreivoPassSigner.publicKey, 2);
+
+// Transfer tokens
+{
+  const tx = api.tx.Balances.transfer_keep_alive({
+    dest: { type: 'Id', value: accountId },
+    value: 1_0000000000n,
+  });
+
+  await new Promise<void>((resolve, error) =>
+    tx.signSubmitAndWatch(ALICE).subscribe({
+      next: (event) => {
+        if (event.type === 'finalized') {
+          resolve();
+        }
+      },
+      error,
+    }),
+  );
 }
 
-// 4️⃣  Sign any runtime challenge
-await passSigner.credentials(
-  await wa.authenticate(challenge, blockNumber),
-);
+// Sign remark
+{
+  const remark = Binary.fromText('Hello, Kreivo!');
+  const tx = api.tx.System.remark_with_event({ remark });
+
+  const signedTx = await tx.sign(kreivoPassSigner, {
+    mortality: { mortal: false },
+  });
+  const txBytes = Vector(u8).dec(signedTx);
+
+  const txResult = await api.apis.BlockBuilder.apply_extrinsic(
+    Binary.fromBytes(new Uint8Array(txBytes)),
+  );
+
+  assert(txResult.success);
+  assert(txResult.value.success);
+}
 ```
 
 ## 🛠️ API
