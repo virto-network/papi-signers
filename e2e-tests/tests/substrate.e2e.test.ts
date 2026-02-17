@@ -60,12 +60,11 @@ withChopsticks(
       // #docregion substrate/setup
       // #uncomment
       // const client = createClient(
-      //   getWssProvider("wss://kreivo.io")
+      //   getWsProvider("wss://kreivo.io")
       // );
       // const sk = await new SubstrateKey(
       // #enduncomment
-      sk = await new SubstrateKey(
-        // #remove
+      sk = await new SubstrateKey( // #remove
         USERNAME,
         SIGNER,
         blockHashChallenger(client)

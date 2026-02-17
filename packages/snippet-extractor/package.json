@@ -5,7 +5,7 @@
   "description": "Extracts code snippet regions from source files",
   "main": "dist/index.js",
   "bin": {
-    "snippet-extractor": "dist/cli.js"
+    "snippet-extractor": "bin.js"
   },
   "type": "module",
   "scripts": {
