@@ -79,12 +79,12 @@ withChopsticks(
 
     it("should be able to register an account, signing with a Substrate Key as device", async () => {
       const keyRegistration = await sk.register(chain.head.number - 6);
-      
+
       // #docregion substrate/register-client
       // #uncomment
       // const finalized = await client.getFinalizedBlock();
       // const keyRegistration = await sk.register(finalized.number);
-      
+
       // // We send the keyRegistration to the server
       // fetch("/api/register", {
       //   method: "POST",
@@ -92,11 +92,11 @@ withChopsticks(
       // })
       // #enduncomment
       // #enddocregion substrate/register-client
-      
+
       // #docregion substrate/register-server
       // #uncomment
       // import { kreivo } from "@polkadot-api/descriptors"
-      // const api = client.getTypedApi(kreivo) 
+      // const api = client.getTypedApi(kreivo)
       // #enduncomment
 
       const tx = api.tx.Pass.register({
