@@ -38,9 +38,12 @@ withChopsticks(
     let api: TypedApi<Kreivo>;
     let sk: SubstrateKey;
     const ALICE = createTestSr25519Signer("//Alice");
+
     // #docregion substrate/setup
+
     const SIGNER = createEd25519Signer();
     const USERNAME = "user@example.org";
+
     // #enddocregion substrate/setup
 
     before(async () => {
@@ -64,7 +67,9 @@ withChopsticks(
       // );
       // const sk = await new SubstrateKey(
       // #enduncomment
-      sk = await new SubstrateKey( // #remove
+      // #remove
+      sk = await new SubstrateKey(
+        // #endremove
         USERNAME,
         SIGNER,
         blockHashChallenger(client)
