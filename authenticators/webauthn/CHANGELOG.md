@@ -1,5 +1,13 @@
 # @virtonetwork/authenticators-webauthn
 
+## 1.2.6
+
+### Patch Changes
+
+- 2b153b4: Updated READMEs to include new usage guides.
+- Updated dependencies [2b153b4]
+  - @virtonetwork/signer@1.3.2
+
 ## 1.2.5
 
 ### Patch Changes

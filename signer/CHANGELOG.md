@@ -1,5 +1,11 @@
 # @virtonetwork/signer
 
+## 1.3.2
+
+### Patch Changes
+
+- 2b153b4: Updated READMEs to include new usage guides.
+
 ## 1.3.1
 
 ### Patch Changes
