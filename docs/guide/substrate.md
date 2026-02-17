@@ -20,14 +20,19 @@ To initialize a `SubstrateKey` authenticator, you need a **username**, a **signe
 
 The registration process involves two steps:
 
-1. **Client-side**: Generate the attestation payload using `sk.register()`.
-2. **Server-side**: Submit the transaction to `api.tx.Pass.register` with the generated payload.
-
 > [!NOTE]
 > Registration usually happens server-side. A federated registration service receives the attestation payload from the client and submits the transaction, paying the fees to register the Pass user.
 
+Generating the attestation payload using `SubstrateKey.register(blockNumber)`.
+
 ::: code-group
-<<< ./snippets/substrate/register.ts [register.ts]
+<<< ./snippets/substrate/register-client.ts [client/register.ts]
+:::
+
+Then, submitting the transaction onchain, via `api.tx.Pass.register` with the generated payload.
+
+::: code-group
+<<< ./snippets/substrate/register-server.ts [server/register.ts]
 :::
 
 ## Authentication

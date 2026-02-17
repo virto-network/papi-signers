@@ -78,8 +78,26 @@ withChopsticks(
     });
 
     it("should be able to register an account, signing with a Substrate Key as device", async () => {
-      // #docregion substrate/register
       const keyRegistration = await sk.register(chain.head.number - 6);
+      
+      // #docregion substrate/register-client
+      // #uncomment
+      // const finalized = await client.getFinalizedBlock();
+      // const keyRegistration = await sk.register(finalized.number);
+      
+      // // We send the keyRegistration to the server
+      // fetch("/api/register", {
+      //   method: "POST",
+      //   body: JSON.stringify(keyRegistration)
+      // })
+      // #enduncomment
+      // #enddocregion substrate/register-client
+      
+      // #docregion substrate/register-server
+      // #uncomment
+      // import { kreivo } from "@polkadot-api/descriptors"
+      // const api = client.getTypedApi(kreivo) 
+      // #enduncomment
 
       const tx = api.tx.Pass.register({
         user: Binary.fromBytes(sk.hashedUserId),
@@ -98,7 +116,7 @@ withChopsticks(
       });
 
       // const txHash = await tx.signAndSubmit(SERVICE); // #uncomment
-      // #enddocregion substrate/register
+      // #enddocregion substrate/register-server
 
       await new Promise<void>((resolve, error) => {
         tx.signSubmitAndWatch(ALICE).subscribe({
