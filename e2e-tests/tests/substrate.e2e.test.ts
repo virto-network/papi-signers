@@ -53,7 +53,7 @@ withChopsticks(
       const balance = 1_000_0000000000n;
       await topupAccount(suite.chain, ALICE.publicKey, balance);
       const account = await api.query.System.Account.getValue(
-        ss58Encode(ALICE.publicKey),
+        ss58Encode(ALICE.publicKey)
       );
       assert.deepEqual(account.data.free, balance);
 
@@ -64,10 +64,11 @@ withChopsticks(
       // );
       // const sk = await new SubstrateKey(
       // #enduncomment
-      sk = await new SubstrateKey( // #remove
+      sk = await new SubstrateKey(
+        // #remove
         USERNAME,
         SIGNER,
-        blockHashChallenger(client),
+        blockHashChallenger(client)
       ).setup();
       // #enddocregion substrate/setup
     });
@@ -101,10 +102,10 @@ withChopsticks(
             if (event.type === "finalized") {
               const newAccount = ss58Encode(
                 sk.addressGenerator(sk.hashedUserId),
-                2,
+                2
               );
               const [created] = api.event.System.NewAccount.filter(
-                event.events,
+                event.events
               );
               try {
                 assert(created);
@@ -142,7 +143,7 @@ withChopsticks(
               }
             },
             error,
-          }),
+          })
         );
       }
 
@@ -152,7 +153,7 @@ withChopsticks(
         // #docregion substrate/authenticate
         const remark = Binary.fromText("Hello, Kreivo!");
         const tx = api.tx.System.remark_with_event({ remark });
-        
+
         // const txHash = await tx.signAndSubmit(kreivoPassSigner); // #uncomment
         // #enddocregion substrate/authenticate
 
@@ -162,12 +163,12 @@ withChopsticks(
 
         const txBytes = Vector(u8).dec(signedTx);
         const txResult = await api.apis.BlockBuilder.apply_extrinsic(
-          Binary.fromBytes(new Uint8Array(txBytes)),
+          Binary.fromBytes(new Uint8Array(txBytes))
         );
 
         assert(txResult.success);
         assert(txResult.value.success);
       }
     });
-  },
+  }
 );

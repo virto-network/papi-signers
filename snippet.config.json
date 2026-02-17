@@ -4,11 +4,7 @@
     "signer/test/**/*.ts",
     "authenticators/**/test/**/*.ts"
   ],
-  "exclude": [
-    "docs/**",
-    "**/node_modules/**",
-    "**/dist/**"
-  ],
+  "exclude": ["docs/**", "**/node_modules/**", "**/dist/**"],
   "outputDir": "docs/guide/snippets",
   "prettierOptions": {
     "parser": "typescript",

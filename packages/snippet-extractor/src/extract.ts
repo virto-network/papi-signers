@@ -1,10 +1,9 @@
-
 import { tokenize } from "./compiler/lexer.js";
 import { parse } from "./compiler/parser.js";
 
-// Re-export RegionData from parser or types if needed, 
+// Re-export RegionData from parser or types if needed,
 // but existing code expects it here or we need to align types.
-// Ideally move RegionData to central types file. 
+// Ideally move RegionData to central types file.
 // For now, let's keep the export here compatible.
 export interface RegionData {
   name: string;
@@ -26,7 +25,7 @@ export function dedentBlock(lines: string[]): string[] {
   if (minIndent === Infinity) return lines;
 
   return lines.map((line) =>
-    line.length >= minIndent ? line.slice(minIndent) : line,
+    line.length >= minIndent ? line.slice(minIndent) : line
   );
 }
 

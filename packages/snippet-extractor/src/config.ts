@@ -1,6 +1,6 @@
-import { z } from "zod";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { z } from "zod";
 
 export const ConfigSchema = z.object({
   include: z.array(z.string()),
@@ -12,7 +12,7 @@ export const ConfigSchema = z.object({
 export type Config = z.infer<typeof ConfigSchema>;
 
 export async function loadConfig(
-  configFile = "snippet.config.json",
+  configFile = "snippet.config.json"
 ): Promise<Config> {
   const configPath = path.resolve(process.cwd(), configFile);
   try {
@@ -20,7 +20,12 @@ export async function loadConfig(
     const json = JSON.parse(rawConfig);
     return ConfigSchema.parse(json);
   } catch (error) {
-    if ((error as any).code === "ENOENT") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code: string }).code === "ENOENT"
+    ) {
       throw new Error(`Config file not found at ${configPath}`);
     }
     throw error;

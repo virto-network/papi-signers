@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import test from "node:test";
-import { dedentBlock, combineBlocks } from "../src/extract.js";
+import { combineBlocks, dedentBlock } from "../src/extract.js";
 
 test("dedentBlock removes common indentation", () => {
   const input = ["  function foo() {", "    return 1;", "  }"];

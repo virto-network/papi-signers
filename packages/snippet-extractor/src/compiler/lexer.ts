@@ -1,5 +1,4 @@
-
-import { Token, TokenType } from "./types.js";
+import type { Token } from "./types.js";
 
 const REGION_START = /\/\/ #docregion (.+)/;
 const REGION_END = /\/\/ #enddocregion (.+)/;
@@ -39,7 +38,7 @@ export function tokenize(content: string): Token[] {
       // If we drop it here, we lose the context if we ever wanted to debug.
       // Let's emit it as a specialized token or just drop it.
       // Dropping it here simplifies the parser.
-      continue; 
+      continue;
     }
 
     const startMatch = line.match(REGION_START);
@@ -67,21 +66,21 @@ export function tokenize(content: string): Token[] {
     // e.g. "  // code // #uncomment"
     let tokenContent = line;
     if (line.includes("// #uncomment")) {
-        // This is a single-line uncomment.
-        // We can treat this as: UncommentStart, Code, UncommentEnd
-        // But the lexer works line-by-line.
-        // We can emit a sequence of tokens for this single line.
-        tokens.push({ type: "UncommentStart", content: "// #uncomment-inline" });
-        
-        // Strip the marker
-        const markerIndex = line.indexOf("// #uncomment");
-        if (markerIndex !== -1) {
-            tokenContent = line.substring(0, markerIndex).trimEnd();
-        }
-        
-        tokens.push({ type: "Code", content: tokenContent });
-        tokens.push({ type: "UncommentEnd", content: "// #enduncomment-inline" });
-        continue;
+      // This is a single-line uncomment.
+      // We can treat this as: UncommentStart, Code, UncommentEnd
+      // But the lexer works line-by-line.
+      // We can emit a sequence of tokens for this single line.
+      tokens.push({ type: "UncommentStart", content: "// #uncomment-inline" });
+
+      // Strip the marker
+      const markerIndex = line.indexOf("// #uncomment");
+      if (markerIndex !== -1) {
+        tokenContent = line.substring(0, markerIndex).trimEnd();
+      }
+
+      tokens.push({ type: "Code", content: tokenContent });
+      tokens.push({ type: "UncommentEnd", content: "// #enduncomment-inline" });
+      continue;
     }
 
     tokens.push({ type: "Code", content: tokenContent });

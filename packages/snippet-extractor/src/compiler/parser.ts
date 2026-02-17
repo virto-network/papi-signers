@@ -1,5 +1,4 @@
-
-import { Token } from "./types.js";
+import type { Token } from "./types.js";
 
 export interface RegionData {
   name: string;
@@ -50,22 +49,22 @@ export function parse(tokens: Token[]): RegionData[] {
         if (removing) continue;
         if (activeRegions.size > 0) {
           let content = token.content;
-          
+
           if (uncommenting) {
-             const uncommentMatch = content.match(/^\s*\/\/ ?(.*)/);
-             if (uncommentMatch) {
-               const indentIndex = content.indexOf("//");
-               if (indentIndex !== -1) {
-                  const indent = content.substring(0, indentIndex);
-                  content = indent + uncommentMatch[1];
-               }
-             }
+            const uncommentMatch = content.match(/^\s*\/\/ ?(.*)/);
+            if (uncommentMatch) {
+              const indentIndex = content.indexOf("//");
+              if (indentIndex !== -1) {
+                const indent = content.substring(0, indentIndex);
+                content = indent + uncommentMatch[1];
+              }
+            }
           }
 
           for (const name of activeRegions) {
             const region = regions[name];
             if (region.blocks.length === 0) {
-               region.blocks.push([]);
+              region.blocks.push([]);
             }
             region.blocks[region.blocks.length - 1].push(content);
           }
