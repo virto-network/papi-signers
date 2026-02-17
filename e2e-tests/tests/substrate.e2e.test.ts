@@ -6,8 +6,10 @@ import type { Blockchain } from "@acala-network/chopsticks-core";
 import { type Kreivo, kreivo } from "@polkadot-api/descriptors";
 import { u8, Vector } from "@polkadot-api/substrate-bindings";
 import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
+// #docregion substrate/setup
 import { SubstrateKey } from "@virtonetwork/authenticators-substrate";
 import { blockHashChallenger, KreivoPassSigner } from "@virtonetwork/signer";
+// #enddocregion substrate/setup
 import type { PolkadotClient, TypedApi } from "polkadot-api";
 import { Binary } from "polkadot-api";
 import { withChopsticks } from "../utils/chopsticks.ts";
@@ -32,8 +34,10 @@ withChopsticks(
     let api: TypedApi<Kreivo>;
     let sk: SubstrateKey;
     const ALICE = createTestSr25519Signer("//Alice");
+    // #docregion substrate/setup
     const SIGNER = createEd25519Signer();
     const USERNAME = "user@example.org";
+    // #enddocregion substrate/setup
 
     before(async () => {
       ({ chain, client } = suite);
@@ -45,15 +49,17 @@ withChopsticks(
       const balance = 1_000_0000000000n;
       await topupAccount(suite.chain, ALICE.publicKey, balance);
       const account = await api.query.System.Account.getValue(
-        ss58Encode(ALICE.publicKey)
+        ss58Encode(ALICE.publicKey),
       );
       assert.deepEqual(account.data.free, balance);
 
+      // #docregion substrate/setup
       sk = await new SubstrateKey(
         USERNAME,
         SIGNER,
-        blockHashChallenger(client)
+        blockHashChallenger(client),
       ).setup();
+      // #enddocregion substrate/setup
     });
 
     it("should be able to register an account, signing with a Substrate Key as device", async () => {
@@ -79,24 +85,26 @@ withChopsticks(
       await new Promise<void>((resolve, error) => {
         tx.signSubmitAndWatch(ALICE).subscribe({
           next: (event) => {
+            // #enddocregion substrate/register
             if (event.type === "finalized") {
               const newAccount = ss58Encode(
                 sk.addressGenerator(sk.hashedUserId),
-                2
+                2,
               );
               const [created] = api.event.System.NewAccount.filter(
-                event.events
+                event.events,
               );
               try {
-                // #enddocregion substrate/register
                 assert(created);
                 assert.equal(created.account, newAccount);
                 // #docregion substrate/register
                 return resolve();
+                // #enddocregion substrate/register
               } catch (e) {
-                error(e);
-              } // Simplified error handling for doc
+                return error(e);
+              }
             }
+            // #docregion substrate/register
           },
           error,
         });
@@ -108,6 +116,7 @@ withChopsticks(
       // #docregion substrate/authenticate
       const kreivoPassSigner = new KreivoPassSigner(sk);
       const accountId = ss58Encode(kreivoPassSigner.publicKey, 2);
+      // #enddocregion substrate/authenticate
 
       // 1. Transfer some tokens to the signer
       console.log(`Submitting transfer to ${accountId}...`);
@@ -125,29 +134,30 @@ withChopsticks(
               }
             },
             error,
-          })
+          }),
         );
       }
 
       // 2. Sign a remark with the signer
       console.log(`Submitting remark from ${accountId}...`);
       {
+        // #docregion substrate/authenticate
         const remark = Binary.fromText("Hello, Kreivo!");
         const tx = api.tx.System.remark_with_event({ remark });
 
         const signedTx = await tx.sign(kreivoPassSigner, {
           mortality: { mortal: false },
         });
+        // #enddocregion substrate/authenticate
         const txBytes = Vector(u8).dec(signedTx);
 
         const txResult = await api.apis.BlockBuilder.apply_extrinsic(
-          Binary.fromBytes(new Uint8Array(txBytes))
+          Binary.fromBytes(new Uint8Array(txBytes)),
         );
-        // #enddocregion substrate/authenticate
 
         assert(txResult.success);
         assert(txResult.value.success);
       }
     });
-  }
+  },
 );
