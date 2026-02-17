@@ -5,7 +5,8 @@
   "workspaces": [
     "e2e-tests",
     "signer",
-    "authenticators/*"
+    "authenticators/*",
+    "packages/snippet-extractor"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
@@ -14,7 +15,7 @@
     "release": "changeset publish",
     "check": "npx @biomejs/biome check .",
     "format": "npx @biomejs/biome check --write .",
-    "docs:gen": "tsx scripts/generate-docs.ts && typedoc",
+    "docs:gen": "snippet-extractor && typedoc",
     "docs:dev": "npm run docs:gen && vitepress dev docs",
     "docs:build": "npm run build && npm run docs:gen && vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -22,11 +23,15 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.15",
     "@changesets/cli": "^2.29.8",
+    "@types/node": "^25.2.3",
+    "fast-glob": "^3.3.3",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.17",
     "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^5.9.3",
     "vitepress": "^1.6.4",
-    "vue": "^3.5.28"
+    "vue": "^3.5.28",
+    "zod": "^4.3.6"
   }
 }

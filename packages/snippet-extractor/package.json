@@ -1,0 +1,26 @@
+{
+  "name": "@virtonetwork/snippet-extractor",
+  "version": "1.0.0",
+  "description": "Extracts code snippet regions from source files",
+  "main": "dist/index.js",
+  "bin": {
+    "snippet-extractor": "dist/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "prettier": "^3.5.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  }
+}
