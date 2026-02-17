@@ -1,6 +1,7 @@
 {
   "name": "@virtonetwork/snippet-extractor",
   "version": "1.0.0",
+  "private": true,
   "description": "Extracts code snippet regions from source files",
   "main": "dist/index.js",
   "bin": {
