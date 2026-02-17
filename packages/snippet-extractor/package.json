@@ -10,6 +10,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "postinstall": "npm run build",
     "test": "tsx --test test/**/*.test.ts"
   },
   "keywords": [],
