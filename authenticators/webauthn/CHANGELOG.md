@@ -1,5 +1,13 @@
 # @virtonetwork/authenticators-webauthn
 
+## 1.2.7
+
+### Patch Changes
+
+- b5a43a2: Bumps \`sinon\` dependency from \`^20.0.0\` to \`^21.0.1\` following \`npm audit fix\`.
+- Updated dependencies [b5a43a2]
+  - @virtonetwork/signer@1.3.3
+
 ## 1.2.6
 
 ### Patch Changes

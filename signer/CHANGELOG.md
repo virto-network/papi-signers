@@ -1,5 +1,11 @@
 # @virtonetwork/signer
 
+## 1.3.3
+
+### Patch Changes
+
+- b5a43a2: Bumps \`sinon\` dependency from \`^20.0.0\` to \`^21.0.1\` following \`npm audit fix\`.
+
 ## 1.3.2
 
 ### Patch Changes
