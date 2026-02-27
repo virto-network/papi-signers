@@ -1,13 +1,12 @@
-import "dotenv/config";
 import assert from "node:assert";
 import { before, it } from "node:test";
-import { overrideWasm } from "@acala-network/chopsticks/utils/override";
-import type { Blockchain } from "@acala-network/chopsticks-core";
 import { type Kreivo, kreivo } from "@polkadot-api/descriptors";
 import { u8, Vector } from "@polkadot-api/substrate-bindings";
 import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
+// #docregion webauthn/setup
 import { WebAuthn } from "@virtonetwork/authenticators-webauthn";
 import { blockHashChallenger, KreivoPassSigner } from "@virtonetwork/signer";
+// #enddocregion webauthn/setup
 import { WebAuthnEmulator } from "nid-webauthn-emulator";
 import type { PolkadotClient, TypedApi } from "polkadot-api";
 import { Binary } from "polkadot-api";
@@ -40,27 +39,28 @@ withChopsticks.skip(
       registeredTypes,
     },
   },
-  (suite) => {
-    let chain: Blockchain;
-    let client: PolkadotClient;
-    let api: TypedApi<Kreivo>;
-    let wa: WebAuthn;
+  async (suite) => {
+    const client: PolkadotClient = suite.client;
+    const api: TypedApi<Kreivo> = client.getTypedApi(kreivo);
     const ALICE = createTestSr25519Signer("//Alice");
+
+    // #docregion webauthn/setup
+    // #uncomment
+    // const client = createClient(
+    //   getWsProvider("wss://testnet.kreivo.kippu.rocks")
+    // );
+    // #enduncomment
+
     const USERNAME = "user@example.org";
+    const wa = await new WebAuthn(
+      USERNAME,
+      blockHashChallenger(client)
+    ).setup();
+    // #enddocregion webauthn/setup
 
     before(async () => {
-      ({ chain, client } = suite);
-      if (process.env.WASM_OVERRIDE) {
-        await overrideWasm(chain, process.env.WASM_OVERRIDE);
-      }
-      api = client.getTypedApi(kreivo);
-
       const balance = 1_000_0000000000n;
       await topupAccount(suite.chain, ALICE.publicKey, balance);
-
-      // #docregion webauthn/setup
-      wa = await new WebAuthn(USERNAME, blockHashChallenger(client)).setup();
-      // #enddocregion webauthn/setup
     });
 
     it("should be able to register and authenticate", async () => {

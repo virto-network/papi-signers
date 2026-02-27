@@ -1,3 +1,4 @@
+import "dotenv/config";
 import {
   after,
   before,
@@ -13,6 +14,7 @@ import {
 } from "@acala-network/chopsticks-core";
 import { getSyncProvider } from "@polkadot-api/json-rpc-provider-proxy";
 import { createClient, type PolkadotClient } from "polkadot-api";
+import { overrideWasm } from "@acala-network/chopsticks/utils/override";
 
 export type ChopsticksContext = SuiteContext & {
   client: PolkadotClient;
@@ -21,6 +23,7 @@ export type ChopsticksContext = SuiteContext & {
 
 export type ChopsticksTestOptions = TestOptions & {
   chopsticksOptions?: SetupOptions;
+  wasm?: string;
 };
 
 const getChopsticksProvider = (chain: Blockchain) => {
@@ -139,7 +142,11 @@ function createWithChopsticks(variant: "default" | "skip" | "todo" | "only") {
       fn = arg2 as ChopsticksFn;
     }
 
-    const { chopsticksOptions, ...testOptions } = options;
+    const {
+      chopsticksOptions,
+      wasm: wasmPath = process.env.WASM_OVERRIDE,
+      ...testOptions
+    } = options;
     const describeFn = variant === "default" ? describe : describe[variant];
 
     const wrapper = async (context: SuiteContext) => {
@@ -152,6 +159,10 @@ function createWithChopsticks(variant: "default" | "skip" | "todo" | "only") {
           endpoint,
           ...chopsticksOptions,
         });
+
+        if (wasmPath) {
+          await overrideWasm(chain, wasmPath);
+        }
 
         const provider = getChopsticksProvider(chain);
 

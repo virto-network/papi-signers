@@ -1,7 +1,5 @@
-import "dotenv/config";
 import assert from "node:assert";
 import { before, it } from "node:test";
-import { overrideWasm } from "@acala-network/chopsticks/utils/override";
 import type { Blockchain } from "@acala-network/chopsticks-core";
 import { type Kreivo, kreivo } from "@polkadot-api/descriptors";
 import { u8, Vector } from "@polkadot-api/substrate-bindings";
@@ -48,9 +46,6 @@ withChopsticks(
 
     before(async () => {
       ({ chain, client } = suite);
-      if (process.env.WASM_OVERRIDE) {
-        await overrideWasm(chain, process.env.WASM_OVERRIDE);
-      }
       api = client.getTypedApi(kreivo);
 
       const balance = 1_000_0000000000n;
