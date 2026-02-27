@@ -35,8 +35,8 @@ export type TSignedMessage<Cx> = {
 };
 
 export type TKeyRegistration<Cx> = {
-  message: TSignedMessage<Cx>;
   public: FixedSizeBinary<32>;
+  message: TSignedMessage<Cx>;
   signature: TMutiSignature;
 };
 
@@ -54,8 +54,8 @@ export const MultiSignature: Codec<TMutiSignature> = Variant({
 
 export const EncodedSignedMessage: Codec<TSignedMessage<number>> = Struct({
   context: u32,
-  authority_id: Bin(32),
   challenge: Bin(32),
+  authority_id: Bin(32),
 });
 
 export const KeyRegistrationSignedMessage: Codec<TSignedMessage<number>> =
@@ -72,8 +72,8 @@ export const KeySignatureSignedMessage: Codec<TSignedMessage<number>> = Struct({
 });
 
 export const KeyRegistration: Codec<TKeyRegistration<number>> = Struct({
-  message: KeyRegistrationSignedMessage,
   public: Bin(32),
+  message: KeyRegistrationSignedMessage,
   signature: MultiSignature,
 });
 
