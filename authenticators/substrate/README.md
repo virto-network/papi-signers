@@ -4,6 +4,17 @@
 
 A TypeScript helper that wires **substrate**-style signatures to the [@virtonetwork/signer](https://github.com/virto-network/papi-signers) stack. It exposes a single class, `Substrate`, that fulfils the `Authenticator<number>` interface used by `PassSigner`.
 
+## Compatibility
+
+The bytes a `SubstrateKey` signs must match what the Kreivo runtime verifies, which changed with Kreivo runtime 133 (release 0.17.0):
+
+| Kreivo runtime | Signed bytes | Use |
+| --- | --- | --- |
+| 133+ (0.17.0+) | `context ++ challenge ++ authority_id` | `>= 1.3.0` |
+| up to 132 (0.16.x) | `context ++ authority_id ++ challenge` | `<= 1.2.3` |
+
+With a version that doesn't match the runtime, registration fails with `Pass::DeviceAttestationInvalid`, and transactions are rejected as `BadSigner`.
+
 ## Setup
 
 First, ensure you have the necessary packages installed:
