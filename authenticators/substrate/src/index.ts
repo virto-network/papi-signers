@@ -1,3 +1,4 @@
+import { Blake2256 } from "@polkadot-api/substrate-bindings";
 import {
   type AddressGenerator,
   type Authenticator,
@@ -6,6 +7,11 @@ import {
   type TPassAuthenticate,
 } from "@virtonetwork/signer";
 import { Binary } from "polkadot-api";
+import {
+  ECDSA_PUBLIC_KEY_LENGTH,
+  ECDSA_SIGNATURE_LENGTH,
+  normalizeEcdsaSignature,
+} from "./ecdsa.ts";
 import {
   EncodedSignedMessage,
   KeyRegistration,
@@ -40,12 +46,38 @@ export class SubstrateKey implements Authenticator<number> {
    */
   public hashedUserId: Uint8Array = new Uint8Array(32);
 
+  /**
+   * The key's on-chain account id, which is also its Pass device id: the
+   * public key itself for Ed25519 and Sr25519, and `blake2_256` of the
+   * compressed public key for Ecdsa (as `MultiSigner::Ecdsa` derives it).
+   */
+  public readonly accountId: Uint8Array;
+
+  /**
+   * @throws Error If `signer.publicKey` has the wrong length for its
+   * `signingType`: 32 bytes for Ed25519 and Sr25519, 33 bytes (compressed)
+   * for Ecdsa.
+   */
   constructor(
     public readonly userId: string,
     private signer: SubstrateSigner,
     public readonly getChallenge: Challenger<number>,
     public readonly addressGenerator: AddressGenerator = kreivoPassDefaultAddressGenerator
-  ) {}
+  ) {
+    const expected =
+      signer.signingType === "Ecdsa" ? ECDSA_PUBLIC_KEY_LENGTH : 32;
+    if (signer.publicKey.length !== expected) {
+      throw new Error(
+        `A ${signer.signingType} SubstrateSigner must have a ${expected}-byte publicKey` +
+          (signer.signingType === "Ecdsa" ? " (compressed)" : "") +
+          `, got ${signer.publicKey.length} bytes`
+      );
+    }
+    this.accountId =
+      signer.signingType === "Ecdsa"
+        ? Blake2256(signer.publicKey)
+        : signer.publicKey;
+  }
 
   /**
    * Pre‑computes {@link hashedUserId}.
@@ -56,6 +88,25 @@ export class SubstrateKey implements Authenticator<number> {
   public async setup(): Promise<this> {
     this.hashedUserId = await SubstrateKey.getHashedUserId(this.userId);
     return this;
+  }
+
+  /**
+   * Signs `message` and checks the result has the shape the runtime expects.
+   * Ecdsa signatures also get their recovery id normalised; see
+   * {@link normalizeEcdsaSignature}.
+   */
+  private async sign(message: Uint8Array): Promise<Uint8Array> {
+    const signature = await this.signer.sign(message);
+    const isEcdsa = this.signer.signingType === "Ecdsa";
+    const expected = isEcdsa ? ECDSA_SIGNATURE_LENGTH : 64;
+    if (signature.length !== expected) {
+      throw new Error(
+        `A ${this.signer.signingType} signature must be ${expected} bytes, got ${signature.length}`
+      );
+    }
+    return isEcdsa
+      ? normalizeEcdsaSignature(message, signature, this.signer.publicKey)
+      : signature;
   }
 
   private static async getHashedUserId(userId: string) {
@@ -75,11 +126,11 @@ export class SubstrateKey implements Authenticator<number> {
       authority_id: KREIVO_AUTHORITY_ID,
     };
     const encodedMessage = EncodedSignedMessage.enc(message);
-    const signature = await this.signer.sign(encodedMessage);
+    const signature = await this.sign(encodedMessage);
 
     return {
       message,
-      public: Binary.fromBytes(this.signer.publicKey),
+      public: Binary.fromBytes(this.accountId),
       signature: {
         type: this.signer.signingType,
         value: Binary.fromBytes(signature),
@@ -108,10 +159,10 @@ export class SubstrateKey implements Authenticator<number> {
       challenge: Binary.fromBytes(challenge),
     };
     const encodedMessage = EncodedSignedMessage.enc(message);
-    const sig = await this.signer.sign(encodedMessage);
+    const sig = await this.sign(encodedMessage);
 
     return {
-      deviceId: Binary.fromBytes(this.signer.publicKey),
+      deviceId: Binary.fromBytes(this.accountId),
       credentials: {
         tag: "SubstrateKey",
         value: KeySignature.enc({

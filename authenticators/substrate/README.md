@@ -31,6 +31,18 @@ const sk = await new SubstrateKey(
 ).setup();
 ```
 
+## Signers
+
+`SubstrateKey` takes any `SubstrateSigner` that follows `sp-core`'s conventions. `@polkadot-labs/hdkd` key pairs do.
+
+| `signingType` | `publicKey` | `sign(bytes)` returns | Account and device id |
+| --- | --- | --- | --- |
+| `Ed25519` | 32 bytes | 64-byte signature of `bytes` | the public key |
+| `Sr25519` | 32 bytes | 64-byte signature of `bytes` (`substrate` context) | the public key |
+| `Ecdsa` | 33 bytes, compressed | 65-byte `r ‖ s ‖ v` signature of `blake2_256(bytes)` | `blake2_256(publicKey)` |
+
+For `Ecdsa`, the runtime recovers the public key from the signature and compares its `blake2_256` with the account, the same way `MultiSigner::Ecdsa` derives an account. So `register()` returns that 32-byte hash as `public`, and `authenticate()` returns it as `deviceId`. `v` is recomputed after signing, so signers returning `0`/`1`, `27`/`28`, or a wrong recovery id still work. Wrong key or signature lengths, and signatures that don't recover to `publicKey`, throw an error.
+
 ## Registration
 
 The registration process involves two steps:
