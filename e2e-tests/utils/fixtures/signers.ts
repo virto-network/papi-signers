@@ -1,4 +1,8 @@
-import { ed25519CreateDerive, sr25519CreateDerive } from "@polkadot-labs/hdkd";
+import {
+  ecdsaCreateDerive,
+  ed25519CreateDerive,
+  sr25519CreateDerive,
+} from "@polkadot-labs/hdkd";
 import {
   DEV_PHRASE,
   entropyToMiniSecret,
@@ -26,6 +30,22 @@ export function createEd25519Signer(): SubstrateSigner {
     publicKey: keypair.publicKey,
     sign: keypair.sign,
     signingType: "Ed25519",
+  };
+}
+
+/**
+ * Makes a random ecdsa (secp256k1) signer: a 33-byte compressed public key,
+ * signing `blake2_256(bytes)` into a 65-byte `r ‖ s ‖ v` signature.
+ */
+export function createEcdsaSigner(): SubstrateSigner {
+  const miniSecret = entropyToMiniSecret(
+    mnemonicToEntropy(generateMnemonic(256))
+  );
+  const keypair = ecdsaCreateDerive(miniSecret)(`//${Date.now()}`);
+  return {
+    publicKey: keypair.publicKey,
+    sign: keypair.sign,
+    signingType: "Ecdsa",
   };
 }
 

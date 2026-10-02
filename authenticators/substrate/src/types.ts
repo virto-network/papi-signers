@@ -8,6 +8,19 @@ import { type Codec, Struct, u32 } from "scale-ts";
 
 export type SigningType = "Ed25519" | "Sr25519" | "Ecdsa";
 
+/**
+ * A key that signs for a {@link SubstrateKey}, following `sp-core`'s
+ * conventions for each `signingType`:
+ *
+ * - `Ed25519`, `Sr25519`: `publicKey` is 32 bytes; `sign` signs `bytes` as
+ *   given (Sr25519 with the `substrate` signing context) and returns 64 bytes.
+ * - `Ecdsa` (secp256k1): `publicKey` is the 33-byte compressed key; `sign`
+ *   signs `blake2_256(bytes)` and returns 65 bytes `r ‖ s ‖ v`. The recovery
+ *   id `v` is recomputed, so `0`/`1` and `27`/`28` both work.
+ *
+ * `@polkadot-labs/hdkd` key pairs (`ed25519CreateDerive`, `sr25519CreateDerive`,
+ * `ecdsaCreateDerive`) follow this contract.
+ */
 export type SubstrateSigner = {
   publicKey: Uint8Array;
   signingType: SigningType;
